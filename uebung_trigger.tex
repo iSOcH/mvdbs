@@ -1,0 +1,111 @@
+\documentclass[11pt,a4paper,parskip=half]{scrartcl}
+\usepackage{ngerman}
+\usepackage[utf8]{inputenc}
+\usepackage[colorlinks=false,pdfborder={0 0 0}]{hyperref}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{textcomp}
+\usepackage{geometry}
+\geometry{a4paper, left=30mm, right=25mm, top=30mm, bottom=35mm} 
+\usepackage{listings}
+\lstset{breaklines=true, breakatwhitespace=true, basicstyle=\scriptsize, numbers=left}
+\title{mvdbs: Übung Trigger}
+\author{Yanick Eberle, Pascal Schwarz}
+\begin{document}
+\maketitle
+
+\section{Aufgabe 1 - Event Logging}
+\subsection{Lösungsidee}
+Wir erstellen einen Trigger, welcher bei den SQL Statements, die potenziell Änderungen an der Tabelle \glqq{}Ausleihen\grqq{} bewirken, ausgelöst wird. Wie in der Aufgabenstellung beschrieben sind dies die folgenden SQL-Befehle:
+
+\begin{itemize}
+	\item{INSERT}
+	\item{UPDATE}
+	\item{DELETE}
+\end{itemize}
+
+Aufgrund der Anforderung sowohl die alten wie auch die neuen Werte zu protokollieren, muss unser Trigger jeweils vor dem Statement ausgeführt werden. In einem solchen Trigger haben wir Zugriff auf die neuen Werte.
+
+\subsection{Tabelle Ausleihen\_Log}
+Die Log-Tabelle enthält einen eigenen Primary Key (Number(6,0)). Die geforderten Angaben (User, welcher die Änderung vorgenommen hat (VARCHAR2(20)), Art der Änderung (VARCHAR(3)) sowie Zeitpunkt der Änderung (DATE)) werden jeweils in einem Attribut abgelegt.
+
+Zusätzlich erhält die Log-Tabelle für jedes Attribut der Tabelle Ausleihen zwei Attribute. In \emph{Feldname}\_old wird der Wert vor der Änderung, in \emph{Feldname}\_new der Wert nach der Änderung festgehalten. Diese Attribute haben jeweils den selben Datentyp wie das jeweilige Attribut in der Tabelle \glqq{}Ausleihen\grqq{}.
+
+\subsection{Trigger für Protokollierung}
+Da ein Statement grundsätzlich mehrere Zeilen der Tabelle \glqq{}auf einmal\grqq{} verändern kann, muss der Trigger mit der Granularität \glqq{}FOR EACH ROW\grqq{} definiert werden.
+
+Wie bei der Lösungsidee bereits beschrieben wird der Trigger vor den Events INSERT, UPDATE und DELETE ausgelöst.
+
+\subsection{SQL Statements}
+\subsubsection{Ausleihen\_Log}
+\begin{lstlisting}
+CREATE TABLE AUSLEIHEN_LOG
+(
+  log_id NUMBER(6, 0) NOT NULL 
+, CHANGE_USER VARCHAR2(20) NOT NULL 
+, CHANGE_DATE TIMESTAMP NOT NULL 
+, CHANGE_TYPE VARCHAR2(3) NOT NULL
+, MNR_OLD VARCHAR2(4)
+, MNR_NEW VARCHAR2(4)
+, DVDNR_OLD NUMBER(6, 0)
+, DVDNR_NEW NUMBER(6, 0)
+, DATUM_OLD DATE
+, DATUM_NEW DATE
+, RUECKGABE_OLD DATE 
+, RUECKGABE_NEW DATE 
+, CONSTRAINT AUSLEIHEN_LOG_PK PRIMARY KEY (log_id) ENABLE 
+);
+\end{lstlisting}
+
+\subsubsection{Trigger}
+\begin{lstlisting}
+CREATE OR REPLACE TRIGGER ausleihen_logger
+  BEFORE UPDATE OR INSERT OR DELETE ON ausleihen
+  FOR EACH ROW
+  DECLARE
+    manipulation varchar2(3) := 'asd';
+  BEGIN
+    if inserting then
+      manipulation := 'INS';
+    elsif deleting then
+      manipulation := 'DEL';
+    elsif updating then
+      manipulation := 'UPD';
+    else 
+      manipulation := 'ERR';
+    end if;
+    
+    INSERT INTO ausleihen_log (change_user, change_date, change_type, mnr_old, mnr_new, dvdnr_old, dvdnr_new, datum_old, datum_new, rueckgabe_old, rueckgabe_new) 
+    VALUES (user, sysdate, manipulation, :old.mnr, :new.mnr, :old.dvdnr, :new.dvdnr, :old.datum, :new.datum, :old.rueckgabe, :new.rueckgabe);
+END;
+\end{lstlisting}
+
+\subsection{Tests}
+
+
+\section{Aufgabe 2 - Referential Integrity}
+\subsection{Lösungsidee}
+Für das Verschieben der Tabelle \glqq{}Filme\grqq{} muss der Foreign Key Constraint \glqq{}DK\_FM\_FK\grqq{} auf der Tabelle \glqq{}DVDKopien\grqq{} zunächst entfernt werden. Ansonsten kann die Tabelle nicht entfernt werden.
+
+Als nächster Schritt wird ein Database-Link auf dem Server telesto (dort sind alle Tabellen ausser Filme) erstellt:
+
+\begin{lstlisting}
+create database link orion.helios.fhnw.ch
+connect to mvdbs01 identified by mvdbs01
+using 'orion'
+\end{lstlisting}
+
+Damit die entfernte Tabelle so benutzt werden kann als wäre sie auf diesem Server wird noch ein SYNONYM erstellt:
+\begin{lstlisting}
+create synonym filme for filme@orion.helios.fhnw.ch;
+\end{lstlisting}
+
+\subsection{Entwurf der Trigger}
+
+\subsection{SQL Trigger}
+
+\subsection{Tests}
+
+\end{document}
