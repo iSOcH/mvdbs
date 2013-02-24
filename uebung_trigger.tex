@@ -29,7 +29,7 @@ Wir erstellen einen Trigger, welcher bei den SQL Statements, die potenziell Änd
 Aufgrund der Anforderung sowohl die alten wie auch die neuen Werte zu protokollieren, muss unser Trigger jeweils vor dem Statement ausgeführt werden. In einem solchen Trigger haben wir Zugriff auf die neuen Werte.
 
 \subsection{Tabelle Ausleihen\_Log}
-Die Log-Tabelle enthält einen eigenen Primary Key (Number(6,0)). Die geforderten Angaben (User, welcher die Änderung vorgenommen hat (VARCHAR2(20)), Art der Änderung (VARCHAR(3)) sowie Zeitpunkt der Änderung (DATE)) werden jeweils in einem Attribut abgelegt.
+Die Log-Tabelle enthält einen eigenen Primary Key (Number(6,0)). Die geforderten Angaben (User, welcher die Änderung vorgenommen hat (VARCHAR2(20)), Art der Änderung (VARCHAR(3)) sowie Zeitpunkt der Änderung (TIMESTAMP)) werden jeweils in einem Attribut abgelegt.
 
 Zusätzlich erhält die Log-Tabelle für jedes Attribut der Tabelle Ausleihen zwei Attribute. In \emph{Feldname}\_old wird der Wert vor der Änderung, in \emph{Feldname}\_new der Wert nach der Änderung festgehalten. Diese Attribute haben jeweils den selben Datentyp wie das jeweilige Attribut in der Tabelle \glqq{}Ausleihen\grqq{}.
 
@@ -65,7 +65,7 @@ CREATE OR REPLACE TRIGGER ausleihen_logger
   BEFORE UPDATE OR INSERT OR DELETE ON ausleihen
   FOR EACH ROW
   DECLARE
-    manipulation varchar2(3) := 'asd';
+    manipulation varchar2(3);
   BEGIN
     if inserting then
       manipulation := 'INS';
