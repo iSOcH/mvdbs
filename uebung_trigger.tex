@@ -86,14 +86,14 @@ END;
 
 
 \section{Aufgabe 2 - Referential Integrity}
-\subsection{Lösungsidee}
+\subsection{Lösungsidee / Vorbereitung}
 Für das Verschieben der Tabelle \glqq{}Filme\grqq{} muss der Foreign Key Constraint \glqq{}DK\_FM\_FK\grqq{} auf der Tabelle \glqq{}DVDKopien\grqq{} zunächst entfernt werden. Ansonsten kann die Tabelle nicht entfernt werden.
 
 Als nächster Schritt wird ein Database-Link auf dem Server telesto (dort sind alle Tabellen ausser Filme) erstellt:
 
 \begin{lstlisting}
 create database link orion.helios.fhnw.ch
-connect to mvdbs01 identified by mvdbs01
+connect to mvdbs10 identified by mvdbs10
 using 'orion'
 \end{lstlisting}
 
@@ -102,9 +102,105 @@ Damit die entfernte Tabelle so benutzt werden kann als wäre sie auf diesem Serv
 create synonym filme for filme@orion.helios.fhnw.ch;
 \end{lstlisting}
 
+Wir brauchen einen entsprechenden Link auch von der anderen Seite her.
+
 \subsection{Entwurf der Trigger}
+In den folgenden Fällen muss unser Trigger eingreifen:
+\begin{enumerate}
+	\item{Löschen eines Datensatzes aus Filme, auf den sich noch mindestens ein Datensatz aus DVDKopien bezieht. Wird vor dem Event DELETE auf der Tabelle Filme für jede Zeile angewendet. Sollte sich noch ein Datensatz aus DVDKopien auf den zu löschenden Film-Eintrag beziehen, so wird eine Exception geworfen.}
+	\item{Ändern des Primärschlüssels (katalognr) eines Datensatzes aus Filme, auf den sich noch mindestens ein Datensatz aus DVDKopien bezieht. Der Trigger muss vor dem Event UPDATE auf der Spalte katalognr wiederum für jede betroffene Zeile angewendet werden. Auch hier soll eine Exception geworfen werden, falls einer der alten Werte in DVDKopien benutzt wurde.}
+	\item{Einfügen eines Datensatzes in DVDKopien - die angegebene katalognr muss in Filme existieren. Um dies zu prüfen verwenden wir einen BEFORE INSERT-Trigger, welcher wiederum pro Zeile angestossen wird.}
+	\item{Änderung von FK in DVDKopien, auch der neue Wert muss in Filme existieren. Dieser Fall wird mit einem Trigger geprüft, der vor dem Update auf der katalognr-Spalte der Tabelle DVDKopien gefeuert wird.}
+\end{enumerate}
 
 \subsection{SQL Trigger}
+\subsubsection{Insert in DVDKopien}
+\begin{lstlisting}
+CREATE OR REPLACE TRIGGER dvdkopien_insert
+  BEFORE INSERT on DVDKopien
+  FOR EACH ROW
+  
+  DECLARE
+    katalognr_found_count NUMBER(2,0) := 0;
+    
+  BEGIN
+    SELECT count(katalognr) INTO katalognr_found_count FROM filme WHERE katalognr = :new.katalognr;
+    
+    dbms_output.put('count(katalognr) in filme: ');
+    dbms_output.put_line(katalognr_found_count);
+    
+    if katalognr_found_count < 1 then
+      raise_application_error(-20000, 'film mit angegebener katalognr existiert nicht');
+    end if;
+    
+  END;
+\end{lstlisting}
+
+\subsubsection{Update in DVDKopien}
+\begin{lstlisting}
+CREATE OR REPLACE TRIGGER dvdkopien_update_katalognr
+  BEFORE UPDATE OF katalognr ON DVDKopien
+  FOR EACH ROW
+  
+  DECLARE
+    katalognr_found_count NUMBER(2,0) := 0;
+    
+  BEGIN
+    SELECT count(katalognr) INTO katalognr_found_count FROM filme WHERE katalognr = :new.katalognr;
+    
+    dbms_output.put('count(katalognr) in filme: ');
+    dbms_output.put_line(katalognr_found_count);
+    
+    if katalognr_found_count < 1 then
+      raise_application_error(-20000, 'film mit angegebener katalognr existiert nicht');
+    end if;
+    
+  END;
+\end{lstlisting}
+
+\subsubsection{Delete aus Filme}
+\begin{lstlisting}
+CREATE OR REPLACE TRIGGER filme_delete
+  BEFORE DELETE on filme
+  FOR EACH ROW
+  
+  DECLARE
+    katalognr_found_count NUMBER(6,0) := 0;
+    
+  BEGIN
+    SELECT count(katalognr) INTO katalognr_found_count FROM dvdkopien WHERE katalognr = :old.katalognr;
+    
+    dbms_output.put('count(katalognr) in dvdkopien: ');
+    dbms_output.put_line(katalognr_found_count);
+    
+    if katalognr_found_count > 0 then
+      raise_application_error(-20000, 'es gibt noch dvdkopien dieses filmes');
+    end if;
+    
+  END;
+\end{lstlisting}
+
+\subsubsection{Update in Filme}
+\begin{lstlisting}
+CREATE OR REPLACE TRIGGER filme_update_katalognr
+  BEFORE UPDATE OF katalognr ON filme
+  FOR EACH ROW
+  
+  DECLARE
+    katalognr_found_count NUMBER(6,0) := 0;
+    
+  BEGIN
+    SELECT count(katalognr) INTO katalognr_found_count FROM dvdkopien WHERE katalognr = :old.katalognr;
+    
+    dbms_output.put('count(katalognr) in dvdkopien: ');
+    dbms_output.put_line(katalognr_found_count);
+    
+    if katalognr_found_count > 0 then
+      raise_application_error(-20000, 'es gibt noch dvdkopien dieses filmes');
+    end if;
+    
+  END;
+\end{lstlisting}
 
 \subsection{Tests}
 
