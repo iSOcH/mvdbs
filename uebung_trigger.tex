@@ -91,6 +91,7 @@ Um zu überprüfen, ob der von uns erstellte Trigger ausleihen\_logger richtig f
 
 \subsubsection{Test INSERT}
 Mit folgendem SQL-Befehl fügen wir Daten in die Tabelle ausleihen ein:
+Mit folgendem SQL-Befehl fügen wir Daten in die Tabelle Ausleihen ein:
 
 \begin{lstlisting}
 insert into ausleihen (mnr,dvdnr,datum,rueckgabe) 
@@ -143,7 +144,7 @@ RUECKGABE_OLD	RUECKGABE_NEW
 Da es sich hier um ein INSERT handelt, sind alle \_old Felder leer. Der Trigger hat also funktioniert.
 
 \subsubsection{Test UPDATE}
-Mit folgendem SQL-Befehl ändern wir Daten in der Tabelle ausleihen:
+Mit folgendem SQL-Befehl ändern wir Daten in der Tabelle Ausleihen:
 
 \begin{lstlisting}
 update ausleihen
@@ -202,7 +203,7 @@ RUECKGABE_OLD	RUECKGABE_NEW
 Nun sieht man, dass die \_old Felder ebenfalls ausgefüllt sind mit den Werten vor dem Update. Der Trigger hat also funktioniert.
 
 \subsubsection{Test DELETE}
-Mit folgendem SQL-Befehl löschen wir Daten in der Tabelle ausleihen:
+Mit folgendem SQL-Befehl löschen wir Daten in der Tabelle Ausleihen:
 
 \begin{lstlisting}
 delete from ausleihen
