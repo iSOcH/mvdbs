@@ -29,7 +29,7 @@ Wir erstellen einen Trigger, welcher bei den SQL Statements, die potenziell Änd
 Aufgrund der Anforderung sowohl die alten wie auch die neuen Werte zu protokollieren, muss unser Trigger jeweils vor dem Statement ausgeführt werden. In einem solchen Trigger haben wir Zugriff auf die neuen Werte.
 
 \subsection{Tabelle Ausleihen\_Log}
-Die Log-Tabelle enthält einen eigenen Primary Key (Number(6,0)). Die geforderten Angaben (User, welcher die Änderung vorgenommen hat (VARCHAR2(20)), Art der Änderung (VARCHAR(3)) sowie Zeitpunkt der Änderung (TIMESTAMP)) werden jeweils in einem Attribut abgelegt.
+Die Log-Tabelle enthält einen eigenen Primary Key (Number(6,0)). Die geforderten Angaben (User, welcher die Änderung vorgenommen hat (VARCHAR2(20)), Art der Änderung (VARCHAR(3)) sowie Zeitpunkt der Änderung (TIMESTAMP(6)) werden jeweils in einem Attribut abgelegt.
 
 Zusätzlich erhält die Log-Tabelle für jedes Attribut der Tabelle Ausleihen zwei Attribute. In \emph{Feldname}\_old wird der Wert vor der Änderung, in \emph{Feldname}\_new der Wert nach der Änderung festgehalten. Diese Attribute haben jeweils den selben Datentyp wie das jeweilige Attribut in der Tabelle \glqq{}Ausleihen\grqq{}.
 
@@ -37,15 +37,17 @@ Zusätzlich erhält die Log-Tabelle für jedes Attribut der Tabelle Ausleihen zw
 Da ein Statement grundsätzlich mehrere Zeilen der Tabelle \glqq{}auf einmal\grqq{} verändern kann, muss der Trigger mit der Granularität \glqq{}FOR EACH ROW\grqq{} definiert werden.
 
 Wie bei der Lösungsidee bereits beschrieben wird der Trigger vor den Events INSERT, UPDATE und DELETE ausgelöst.
+Damit wir uns nicht um den Primärschlüssel kümmern müssen, erstellen wir eine Sequenz und erhöhen diese bei jedem Eintrag in die Tabelle  ausleihen\_log um eins.
+
 
 \subsection{SQL Statements}
 \subsubsection{Ausleihen\_Log}
 \begin{lstlisting}
 CREATE TABLE AUSLEIHEN_LOG
 (
-  log_id NUMBER(6, 0) NOT NULL 
+  LOG_ID NUMBER(6, 0) NOT NULL 
 , CHANGE_USER VARCHAR2(20) NOT NULL 
-, CHANGE_DATE TIMESTAMP NOT NULL 
+, CHANGE_DATE TIMESTAMP(6) NOT NULL 
 , CHANGE_TYPE VARCHAR2(3) NOT NULL
 , MNR_OLD VARCHAR2(4)
 , MNR_NEW VARCHAR2(4)
@@ -61,11 +63,12 @@ CREATE TABLE AUSLEIHEN_LOG
 
 \subsubsection{Trigger}
 \begin{lstlisting}
-CREATE OR REPLACE TRIGGER ausleihen_logger
+  CREATE OR REPLACE TRIGGER ausleihen_logger 
   BEFORE UPDATE OR INSERT OR DELETE ON ausleihen
   FOR EACH ROW
   DECLARE
     manipulation varchar2(3);
+    new_log_id number(6,0);
   BEGIN
     if inserting then
       manipulation := 'INS';
@@ -77,13 +80,164 @@ CREATE OR REPLACE TRIGGER ausleihen_logger
       manipulation := 'ERR';
     end if;
     
-    INSERT INTO ausleihen_log (change_user, change_date, change_type, mnr_old, mnr_new, dvdnr_old, dvdnr_new, datum_old, datum_new, rueckgabe_old, rueckgabe_new) 
-    VALUES (user, sysdate, manipulation, :old.mnr, :new.mnr, :old.dvdnr, :new.dvdnr, :old.datum, :new.datum, :old.rueckgabe, :new.rueckgabe);
+    SELECT seq_ausleih_log_id.nextval INTO new_log_id FROM dual; 
+    INSERT INTO ausleihen_log (log_id, change_user, change_date, change_type, mnr_old, mnr_new, dvdnr_old, dvdnr_new, datum_old, datum_new, rueckgabe_old, rueckgabe_new) 
+    VALUES (new_log_id, user, sysdate, manipulation, :old.mnr, :new.mnr, :old.dvdnr, :new.dvdnr, :old.datum, :new.datum, :old.rueckgabe, :new.rueckgabe);
 END;
 \end{lstlisting}
 
 \subsection{Tests}
+Um zu überprüfen, ob der von uns erstellte Trigger ausleihen\_logger richtig funktioniert und alle verlangten Informationen in der Tabelle ausleihen\_log eingetragen sind, führen wir für jede potentielle Änderung einen Tests durch.
 
+\subsubsection{Test INSERT}
+Mit folgendem SQL-Befehl fügen wir Daten in die Tabelle ausleihen ein:
+
+\begin{lstlisting}
+insert into ausleihen(mnr,dvdnr,datum,rueckgabe) VALUES ('M005',468123,'01.01.2000',null);
+\end{lstlisting}
+
+In der Tabelle ausleihen sind nun die eingefügten Daten in der vierten Zeile ersichtlich:
+
+\begin{lstlisting}
+MNR	DVDNR	 DATUM		RUECKGABE
+---- 	------	-------- 	---------
+M001	468123 	01.01.99	
+M005	468123	01.01.00	
+M002	158234 	19.07.07	21.07.07  
+M004	158234 	02.08.07	04.08.07  
+M003	269260 	05.01.08	
+M003	199004 	05.01.08	
+M001	310094 	22.11.07	27.11.07  
+M001	468123 	19.01.08	
+M002	183669 	30.11.07	01.12.07  
+M004	183669 	27.12.07	03.01.08  
+M005	183669 	15.01.08	
+M001	183669	01.01.99	
+\end{lstlisting}
+
+In der Tabelle ausleihen\_log wurden die Daten mit der LOG\_ID 22 eingefügt (Zeile 3):
+
+\begin{lstlisting}
+LOG_ID	CHANGE_USER	CHANGE_DATE			CHANGE_TYPE	
+------	-----------	---------------------------	----------		
+22	MVDBS10		24.02.13 15:19:50,000000000	INS					
+\end{lstlisting}
+
+\begin{lstlisting}
+MNR_OLD	MNR_NEW		DVDNR_OLD	DVDNR_NEW	DATUM_OLD	DATUM_NEW	
+-------	-------		----------	----------	---------	--------- 	
+	M005				468123				01.01.00					
+\end{lstlisting}
+\begin{lstlisting}
+RUECKGABE_OLD	RUECKGABE_NEW
+-------------	-------------	
+						.
+\end{lstlisting}
+
+Da es sich hier um ein INSERT handelt, sind alle \_old Felder leer. Der Trigger hat also funktioniert.
+
+\subsubsection{Test UPDATE}
+Mit folgendem SQL-Befehl ändern wir Daten in der Tabelle ausleihen:
+
+\begin{lstlisting}
+update ausleihen
+set mnr = 'M004'
+where mnr = 'M005' and datum like '01.01.00';
+\end{lstlisting}
+
+In der Tabelle ausleihen sind nun die geänderten Daten in der vierten Zeile ersichtlich:
+
+\begin{lstlisting}
+MNR	DVDNR	 DATUM		RUECKGABE
+---- 	------	-------- 	---------
+M001	468123 	01.01.99	
+M004	468123	01.01.00	
+M002	158234 	19.07.07	21.07.07  
+M004	158234 	02.08.07	04.08.07  
+M003	269260 	05.01.08	
+M003	199004 	05.01.08	
+M001	310094 	22.11.07	27.11.07  
+M001	468123 	19.01.08	
+M002	183669 	30.11.07	01.12.07  
+M004	183669 	27.12.07	03.01.08  
+M005	183669	15.01.08	
+M001	183669	01.01.99	
+\end{lstlisting}
+
+In der Tabelle ausleihen\_log wurden die Daten mit der LOG\_ID 23 eingefügt (Zeile 4):
+
+\begin{lstlisting}
+LOG_ID	CHANGE_USER	CHANGE_DATE			CHANGE_TYPE	
+------	-----------	---------------------------	----------		
+22	MVDBS10		24.02.13 15:19:50,000000000	INS					
+23	MVDBS10		24.02.13 15:34:44,000000000	UPD					
+\end{lstlisting}
+
+\begin{lstlisting}
+MNR_OLD	MNR_NEW		DVDNR_OLD	DVDNR_NEW	DATUM_OLD	DATUM_NEW	
+-------	-------		----------	----------	---------	--------- 	
+	M005				468123				01.01.00					
+M005	M004		468123		468123		01.01.00	01.01.00				
+\end{lstlisting}
+\begin{lstlisting}
+RUECKGABE_OLD	RUECKGABE_NEW
+-------------	-------------	
+						.
+						.
+\end{lstlisting}
+
+Nun sieht man, dass die \_old Felder ebenfalls ausgefüllt sind mit den Werten vor dem Update. Der Trigger hat also funktioniert.
+
+\subsubsection{Test DELETE}
+Mit folgendem SQL-Befehl löschen wir Daten in der Tabelle ausleihen:
+
+\begin{lstlisting}
+delete from ausleihen
+where mnr = 'M004' and datum like '01.01.00';
+\end{lstlisting}
+
+In der Tabelle ausleihen sind nun die gelöschten Daten nicht mehr ersichtlich:
+\begin{lstlisting}
+MNR	DVDNR	 DATUM		RUECKGABE
+---- 	------	-------- 	---------
+M001	468123 	01.01.99	
+M002	158234 	19.07.07	21.07.07  
+M004	158234 	02.08.07	04.08.07  
+M003	269260 	05.01.08	
+M003	199004 	05.01.08	
+M001	310094 	22.11.07	27.11.07  
+M001	468123 	19.01.08	
+M002	183669 	30.11.07	01.12.07  
+M004	183669 	27.12.07	03.01.08  
+M005	183669 	15.01.08	
+M001	183669 	01.01.99	
+\end{lstlisting}
+
+In der Tabelle ausleihen\_log wurden die Daten mit der LOG\_ID 24 eingefügt (Zeile 5):
+\begin{lstlisting}
+LOG_ID	CHANGE_USER	CHANGE_DATE			CHANGE_TYPE	
+------	-----------	---------------------------	----------		
+22	MVDBS10		24.02.13 15:19:50,000000000	INS					
+23	MVDBS10		24.02.13 15:34:44,000000000	UPD					
+24	MVDBS10		24.02.13 15:41:14,000000000	DEL					
+\end{lstlisting}
+
+\begin{lstlisting}
+MNR_OLD	MNR_NEW		DVDNR_OLD	DVDNR_NEW	DATUM_OLD	DATUM_NEW	
+-------	-------		----------	----------	---------	--------- 	
+	M005				468123				01.01.00					
+M005	M004		468123		468123		01.01.00	01.01.00				
+M005			468123				01.01.00					
+\end{lstlisting}
+\begin{lstlisting}
+RUECKGABE_OLD	RUECKGABE_NEW
+-------------	-------------	
+						.
+						.
+						.
+\end{lstlisting}
+
+Da es sich nun um ein DELETE-Statement handelt, gibt es keine neuen Werte, daher sind die \_new Felder leer. Der Trigger hat also funktioniert.
 
 \section{Aufgabe 2 - Referential Integrity}
 \subsection{Lösungsidee / Vorbereitung}
@@ -203,5 +357,18 @@ CREATE OR REPLACE TRIGGER filme_update_katalognr
 \end{lstlisting}
 
 \subsection{Tests}
+Um zu überprüfen ob die Trigger richtig funktionieren, erstellen wir für jeden Fall zwei Tests, wobei einer der Tests das Erlaubte durchführt und der andere eine Exception verursacht.
+
+\subsubsection{Test Insert in DVD Kopien}
+
+
+\subsubsection{Test Update in DVD Kopien}
+
+
+\subsubsection{Test Delete in Filme}
+
+
+\subsubsection{Test Update in DVD Kopien}
+
 
 \end{document}
