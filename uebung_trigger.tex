@@ -93,16 +93,19 @@ Um zu überprüfen, ob der von uns erstellte Trigger ausleihen\_logger richtig f
 Mit folgendem SQL-Befehl fügen wir Daten in die Tabelle ausleihen ein:
 
 \begin{lstlisting}
-insert into ausleihen(mnr,dvdnr,datum,rueckgabe) VALUES ('M005',468123,'01.01.2000',null);
+insert into ausleihen (mnr,dvdnr,datum,rueckgabe) 
+select 'M005',468123,'01.01.2000',null from dual
+union all select 'M005',183669,'01.01.2000',null from dual;
 \end{lstlisting}
 
-In der Tabelle ausleihen sind nun die eingefügten Daten in der vierten Zeile ersichtlich:
+In der Tabelle ausleihen sind nun die eingefügten Daten in der 4. und 5. Zeile ersichtlich:
 
 \begin{lstlisting}
 MNR	DVDNR	 DATUM		RUECKGABE
 ---- 	------	-------- 	---------
 M001	468123 	01.01.99	
 M005	468123	01.01.00	
+M005	183669	01.01.00	
 M002	158234 	19.07.07	21.07.07  
 M004	158234 	02.08.07	04.08.07  
 M003	269260 	05.01.08	
@@ -115,22 +118,25 @@ M005	183669 	15.01.08
 M001	183669	01.01.99	
 \end{lstlisting}
 
-In der Tabelle ausleihen\_log wurden die Daten mit der LOG\_ID 22 eingefügt (Zeile 3):
+In der Tabelle ausleihen\_log wurden die Daten mit der LOG\_ID 22 und 23 eingefügt (Zeile 3 und 4):
 
 \begin{lstlisting}
 LOG_ID	CHANGE_USER	CHANGE_DATE			CHANGE_TYPE	
 ------	-----------	---------------------------	----------		
 22	MVDBS10		24.02.13 15:19:50,000000000	INS					
+23	MVDBS10		24.02.13 15:19:50,000000000	INS					
 \end{lstlisting}
 
 \begin{lstlisting}
 MNR_OLD	MNR_NEW		DVDNR_OLD	DVDNR_NEW	DATUM_OLD	DATUM_NEW	
 -------	-------		----------	----------	---------	--------- 	
 	M005				468123				01.01.00					
+	M005				183669				01.01.00					
 \end{lstlisting}
 \begin{lstlisting}
 RUECKGABE_OLD	RUECKGABE_NEW
 -------------	-------------	
+						.
 						.
 \end{lstlisting}
 
@@ -145,13 +151,14 @@ set mnr = 'M004'
 where mnr = 'M005' and datum like '01.01.00';
 \end{lstlisting}
 
-In der Tabelle ausleihen sind nun die geänderten Daten in der vierten Zeile ersichtlich:
+In der Tabelle ausleihen sind nun die geänderten Daten in der 4. und 5. Zeile ersichtlich:
 
 \begin{lstlisting}
 MNR	DVDNR	 DATUM		RUECKGABE
 ---- 	------	-------- 	---------
 M001	468123 	01.01.99	
 M004	468123	01.01.00	
+M004	183669	01.01.00	
 M002	158234 	19.07.07	21.07.07  
 M004	158234 	02.08.07	04.08.07  
 M003	269260 	05.01.08	
@@ -164,24 +171,30 @@ M005	183669	15.01.08
 M001	183669	01.01.99	
 \end{lstlisting}
 
-In der Tabelle ausleihen\_log wurden die Daten mit der LOG\_ID 23 eingefügt (Zeile 4):
+In der Tabelle ausleihen\_log wurden die Daten mit der LOG\_ID 24 und 25 eingefügt (Zeile 5 und 6):
 
 \begin{lstlisting}
 LOG_ID	CHANGE_USER	CHANGE_DATE			CHANGE_TYPE	
 ------	-----------	---------------------------	----------		
 22	MVDBS10		24.02.13 15:19:50,000000000	INS					
-23	MVDBS10		24.02.13 15:34:44,000000000	UPD					
+23	MVDBS10		24.02.13 15:19:50,000000000	INS					
+24	MVDBS10		24.02.13 15:34:44,000000000	UPD					
+25	MVDBS10		24.02.13 15:34:44,000000000	UPD					
 \end{lstlisting}
 
 \begin{lstlisting}
 MNR_OLD	MNR_NEW		DVDNR_OLD	DVDNR_NEW	DATUM_OLD	DATUM_NEW	
 -------	-------		----------	----------	---------	--------- 	
 	M005				468123				01.01.00					
+	M005				183669				01.01.00					
 M005	M004		468123		468123		01.01.00	01.01.00				
+M005	M004		183669		183669		01.01.00	01.01.00				
 \end{lstlisting}
 \begin{lstlisting}
 RUECKGABE_OLD	RUECKGABE_NEW
 -------------	-------------	
+						.
+						.
 						.
 						.
 \end{lstlisting}
@@ -197,6 +210,7 @@ where mnr = 'M004' and datum like '01.01.00';
 \end{lstlisting}
 
 In der Tabelle ausleihen sind nun die gelöschten Daten nicht mehr ersichtlich:
+
 \begin{lstlisting}
 MNR	DVDNR	 DATUM		RUECKGABE
 ---- 	------	-------- 	---------
@@ -213,25 +227,35 @@ M005	183669 	15.01.08
 M001	183669 	01.01.99	
 \end{lstlisting}
 
-In der Tabelle ausleihen\_log wurden die Daten mit der LOG\_ID 24 eingefügt (Zeile 5):
+In der Tabelle ausleihen\_log wurden die Daten mit der LOG\_ID 26 und 27 eingefügt (Zeile 7 und 8):
+
 \begin{lstlisting}
 LOG_ID	CHANGE_USER	CHANGE_DATE			CHANGE_TYPE	
 ------	-----------	---------------------------	----------		
 22	MVDBS10		24.02.13 15:19:50,000000000	INS					
-23	MVDBS10		24.02.13 15:34:44,000000000	UPD					
-24	MVDBS10		24.02.13 15:41:14,000000000	DEL					
+23	MVDBS10		24.02.13 15:19:50,000000000	INS					
+24	MVDBS10		24.02.13 15:34:44,000000000	UPD					
+25	MVDBS10		24.02.13 15:34:44,000000000	UPD					
+26	MVDBS10		24.02.13 15:41:14,000000000	DEL					
+27	MVDBS10		24.02.13 15:41:14,000000000	DEL					
 \end{lstlisting}
 
 \begin{lstlisting}
 MNR_OLD	MNR_NEW		DVDNR_OLD	DVDNR_NEW	DATUM_OLD	DATUM_NEW	
 -------	-------		----------	----------	---------	--------- 	
 	M005				468123				01.01.00					
+	M005				183669				01.01.00					
 M005	M004		468123		468123		01.01.00	01.01.00				
-M005			468123				01.01.00					
+M005	M004		183669		183669		01.01.00	01.01.00				
+M004			468123				01.01.00					
+M004			183669				01.01.00					
 \end{lstlisting}
 \begin{lstlisting}
 RUECKGABE_OLD	RUECKGABE_NEW
 -------------	-------------	
+						.
+						.
+						.
 						.
 						.
 						.
