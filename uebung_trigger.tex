@@ -281,7 +281,19 @@ Damit die entfernte Tabelle so benutzt werden kann als wäre sie auf diesem Serv
 create synonym filme for filme@orion.helios.fhnw.ch;
 \end{lstlisting}
 
-Wir brauchen einen entsprechenden Link auch von der anderen Seite her.
+Wir brauchen einen entsprechenden Link auch von der anderen Seite her:
+
+\begin{lstlisting}
+create database link telesto.janus.fhnw.ch
+connect to mvdbs10 identified by mvdbs10
+using 'telesto'
+\end{lstlisting}
+
+Damit die entfernte Tabelle so benutzt werden kann als wäre sie auf diesem Server wird noch ein SYNONYM erstellt:
+\begin{lstlisting}
+create synonym dvdkopien for dvdkopien@telesto.janus.fhnw.ch;
+\end{lstlisting}
+
 
 \subsection{Entwurf der Trigger}
 In den folgenden Fällen muss unser Trigger eingreifen:
@@ -337,10 +349,10 @@ CREATE OR REPLACE TRIGGER dvdkopien_update_katalognr
   END;
 \end{lstlisting}
 
-\subsubsection{Delete aus Filme}
+\subsubsection{Update in Filme}
 \begin{lstlisting}
-CREATE OR REPLACE TRIGGER filme_delete
-  BEFORE DELETE on filme
+CREATE OR REPLACE TRIGGER filme_update_katalognr
+  BEFORE UPDATE OF katalognr ON filme
   FOR EACH ROW
   
   DECLARE
@@ -359,10 +371,10 @@ CREATE OR REPLACE TRIGGER filme_delete
   END;
 \end{lstlisting}
 
-\subsubsection{Update in Filme}
+\subsubsection{Delete aus Filme}
 \begin{lstlisting}
-CREATE OR REPLACE TRIGGER filme_update_katalognr
-  BEFORE UPDATE OF katalognr ON filme
+CREATE OR REPLACE TRIGGER filme_delete
+  BEFORE DELETE on filme
   FOR EACH ROW
   
   DECLARE
@@ -388,15 +400,17 @@ Um zu überprüfen ob die Trigger richtig funktionieren, erstellen wir für jede
 Wir fügen in die Tabelle DVDKopien Daten mit einem vorhandenen FK katalognr ein:
 
 \begin{lstlisting}
-insert into dvdkopien (dvdnr,katalognr,fnr) VALUES (10001,2468,'F1')
+insert into dvdkopien (dvdnr,katalognr,fnr) select 10001,2468,'F1'
+from dual union all select 10002,2468,'F2' from dual;
 \end{lstlisting}
 
-Es wird keine Exception geworfen. In der Tabelle dvdkopien sind die eingefügten Daten nun ersichtlich (Zeile X und Y):
+Es wird keine Exception geworfen. In der Tabelle DVDKopien sind die eingefügten Daten nun ersichtlich (Zeile 3 und 4):
 
 \begin{lstlisting}
      DVDNR  KATALOGNR FNR
 ---------- ---------- ---
      10001       2468 F1  
+     10002       2468 F2  
     199004       2028 F1  
     468123       2028 F2  
     269260       1245 F1  
@@ -413,14 +427,16 @@ Es wird keine Exception geworfen. In der Tabelle dvdkopien sind die eingefügten
 Für den zweiten Fall versuchen wir Daten einzufügen mit einem ungültigen FK katalognr:
 
 \begin{lstlisting}
-insert into dvdkopien (dvdnr,katalognr,fnr) VALUES (10002,9999,'F1')
+insert into dvdkopien (dvdnr,katalognr,fnr) select 10003,2468,'F1'
+from dual union all select 10004,9999,'F2' from dual;
 \end{lstlisting}
 
-Es wird eine Exception geworfen.
+Es wird eine Exception geworfen von unserem Trigger der die Meldung "film mit angegebener katalognr existiert nicht" ausgibt.
 
 \begin{lstlisting}
 Fehler beim Start in Zeile 1 in Befehl:
-insert into dvdkopien (dvdnr,katalognr,fnr) VALUES (10002,9999,'F1')
+insert into dvdkopien (dvdnr,katalognr,fnr) select 10003,2468,'F1'
+from dual union all select 10004,9999,'F2' from dual
 Fehlerbericht:
 SQL-Fehler: ORA-20000: film mit angegebener katalognr existiert nicht
 ORA-06512: in "MVDBS10.DVDKOPIEN_INSERT", Zeile 11
@@ -432,12 +448,13 @@ ORA-04088: Fehler bei der Ausfuehrung von Trigger 'MVDBS10.DVDKOPIEN_INSERT'
            the application administrator or DBA for more information.
 \end{lstlisting}
 
-Die Daten wurden nicht in die Tabelle dvdkopien eingefügt:
+Es wurden keine Daten in die Tabelle DVDKopien eingefügt:
 
 \begin{lstlisting}
      DVDNR  KATALOGNR FNR
 ---------- ---------- ---
      10001       2468 F1  
+     10002       2468 F2
     199004       2028 F1  
     468123       2028 F2  
     269260       1245 F1  
@@ -451,45 +468,208 @@ Die Daten wurden nicht in die Tabelle dvdkopien eingefügt:
     310094       1062 F2  
 \end{lstlisting}
 
+Wir haben ein Multi-Row-Insert mit zwei Zeilen durchgeführt, bei welchem eine Zeile korrekt war und die andere einen ungültigen FK katalognr enthalten hat. Da es sich um eine Transaktion handelt, darf alles oder gar nichts eingefügt werden. Daher ist es korrekt, dass das ganze Statement nicht ausgeführt wurde und somit keine Daten in die Tabelle DVDKopien eingefügt wurden.
+
 \subsubsection{Test Update in DVD Kopien}
+Nun werden wir einen bestehenden Eintrag ind er Tabelle DVDKopien anpassen und die katalognr mit einem anderen gültigen Wert ersetzen:
+
 \begin{lstlisting}
--- Update DVDKopien --
-----------------------
---sucess
 update dvdkopien
 set katalognr = 2028
-where katalognr = 2468
---exception
+where dvdnr like '1000%'
+\end{lstlisting}
+
+Es wird keine Exception geworfen. In der Tabelle DVDKopien sind die geänderten Daten nun ersichtlich (Zeile 3 und 4):
+
+\begin{lstlisting}
+     DVDNR  KATALOGNR FNR
+---------- ---------- ---
+     10001       2028 F1  
+     10002       2028 F2  
+    199004       2028 F1  
+    468123       2028 F2  
+    269260       1245 F1  
+    183669       1245 F3  
+    329270       1245 F4  
+    178643       2239 F2  
+    389653       2239 F4  
+    158234       1062 F3  
+    139558       2468 F2  
+    469118       2468 F2  
+    310094       1062 F2  
+\end{lstlisting}
+
+Für den zweiten Fall versuchen wir den FK katalognr durch einen ungültigen FK zu ersetzen:
+
+\begin{lstlisting}
 update dvdkopien
 set katalognr = 9999
-where katalognr = 1001
+where dvdnr like '1000%'
 \end{lstlisting}
 
-\subsubsection{Test Delete in Filme}
+Es wird eine Exception geworfen von unserem Trigger der die Meldung "film mit angegebener katalognr existiert nicht" ausgibt.
+
 \begin{lstlisting}
--- Delete Filme --
-------------------
---sucess
-delete from filme
-where katalognr = 2588
---exception
-delete from filme
-where katalognr = 2468
+Fehler beim Start in Zeile 1 in Befehl:
+update dvdkopien
+set katalognr = 9999
+where dvdnr like '1000%'
+Fehlerbericht:
+SQL-Fehler: ORA-20000: film mit angegebener katalognr existiert nicht
+ORA-06512: in "MVDBS10.DVDKOPIEN_UPDATE_KATALOGNR", Zeile 11
+ORA-04088: Fehler bei der Ausfuehrung von Trigger 'MVDBS10.DVDKOPIEN_UPDATE_KATALOGNR'
+20000. 00000 -  "%s"
+*Cause:    The stored procedure 'raise_application_error'
+           was called which causes this error to be generated.
+*Action:   Correct the problem as described in the error message or contact
+           the application administrator or DBA for more information.
 \end{lstlisting}
 
+Es wurden keine Daten in die Tabelle DVDKopien eingefügt:
+
+\begin{lstlisting}
+     DVDNR  KATALOGNR FNR
+---------- ---------- ---
+     10001       2028 F1  
+     10002       2028 F2  
+    199004       2028 F1  
+    468123       2028 F2  
+    269260       1245 F1  
+    183669       1245 F3  
+    329270       1245 F4  
+    178643       2239 F2  
+    389653       2239 F4  
+    158234       1062 F3  
+    139558       2468 F2  
+    469118       2468 F2  
+    310094       1062 F2  
+\end{lstlisting}
 
 \subsubsection{Test Update in Filme}
+Wir ändern die katalognr eines bestehenden Filmes zu welchem keine DVDKopie existiert, auf welchen also keine Referenz vorhanden ist:
+
 \begin{lstlisting}
--- Update Filme --
-------------------
---sucess
 update filme
 set katalognr = 1111
-where katalognr = 1672
---exception
+where katalognr = 1672;
+\end{lstlisting}
+
+Es wird keine Exception geworfen. In der Tabelle Filme sind die geänderten Daten nun ersichtlich (Zeile 8):
+
+\begin{lstlisting}
+ KATALOGNR TITEL                          MINDESTALTER    GEBUEHR
+---------- ------------------------------ ------------ ----------
+      2028 Casablanca                                9        8.5 
+      1245 Ocean's Eleven                           12        9.5 
+      2239 A Space Odyssee                          12        7.5 
+      1062 Pulp Fiction                             16        8.5 
+      2588 The Pelican Brief                        12        8.5 
+      1111 Erin Brockovich                           9        8.9 
+      2468 Ratatouille                               6        7.5 
+\end{lstlisting}
+
+Für den zweiten Fall versuchen wir die katalognr eines bestehenden Filmes zu ändern, zu welchem eine DVDKopie existiert, auf welchen also eine Referenz vorhanden ist:
+
+\begin{lstlisting}
 update filme
 set katalognr = 2222
+where katalognr = 2468 or 
+      katalognr = 1111;
+\end{lstlisting}
+
+Es wird eine Exception geworfen von unserem Trigger der die Meldung "es gibt noch dvdkopien dieses filmes" ausgibt.
+
+\begin{lstlisting}
+Fehler beim Start in Zeile 1 in Befehl:
+update filme
+set katalognr = 2222
+where katalognr = 2468 or 
+      katalognr = 1111
+Fehlerbericht:
+SQL-Fehler: ORA-20000: es gibt noch dvdkopien dieses filmes
+ORA-06512: in "MVDBS10.FILME_UPDATE_KATALOGNR", Zeile 11
+ORA-04088: Fehler bei der Ausfuehrung von Trigger 'MVDBS10.FILME_UPDATE_KATALOGNR'
+ORA-02063: vorherige 3 lines von ORION.HELIOS.FHNW.CH
+20000. 00000 -  "%s"
+*Cause:    The stored procedure 'raise_application_error'
+           was called which causes this error to be generated.
+*Action:   Correct the problem as described in the error message or contact
+           the application administrator or DBA for more information.
+\end{lstlisting}
+
+Es wurden keine Daten in die Tabelle Filme geändert:
+
+\begin{lstlisting}
+ KATALOGNR TITEL                          MINDESTALTER    GEBUEHR
+---------- ------------------------------ ------------ ----------
+      2028 Casablanca                                9        8.5 
+      1245 Ocean's Eleven                           12        9.5 
+      2239 A Space Odyssee                          12        7.5 
+      1062 Pulp Fiction                             16        8.5 
+      2588 The Pelican Brief                        12        8.5 
+      1111 Erin Brockovich                           9        8.9 
+      2468 Ratatouille                               6        7.5 
+\end{lstlisting}
+
+Auch hier wird ein Update auf mehrer Datensätze durchgeführt. Da es sich um eine Transaktion handelt, wird keiner der beiden Datensätze angepasst, obwohl das Update beim einten Datensatz '1111' nicht gegen die referentielle Integrrität verstösst.
+
+\subsubsection{Test Delete in Filme}
+Wir löschen einen Film, auf welchen keine Referenz verweist:
+
+\begin{lstlisting}
+delete from filme
+where katalognr = 2588
+\end{lstlisting}
+
+Es wird keine Exception geworfen. In der Tabelle Filme ist der Datensatz mit der katalognr 2588 nicht mehr vorhanden:
+
+\begin{lstlisting}
+ KATALOGNR TITEL                          MINDESTALTER    GEBUEHR
+---------- ------------------------------ ------------ ----------
+      2028 Casablanca                                9        8.5 
+      1245 Ocean's Eleven                           12        9.5 
+      2239 A Space Odyssee                          12        7.5 
+      1062 Pulp Fiction                             16        8.5 
+      1111 Erin Brockovich                           9        8.9 
+      2468 Ratatouille                               6        7.5 
+\end{lstlisting}
+
+Für den zweiten Fall versuchen wir einen Film zu löschen, zu welchem DVDKopien existieren, auf welchen also eine Referenz verweist:
+
+\begin{lstlisting}
+delete from filme
 where katalognr = 2468
+\end{lstlisting}
+
+Es wird eine Exception geworfen von unserem Trigger der die Meldung "es gibt noch dvdkopien dieses filmes" ausgibt.
+
+\begin{lstlisting}
+Fehler beim Start in Zeile 1 in Befehl:
+delete from filme
+where katalognr = 2468
+Fehlerbericht:
+SQL-Fehler: ORA-20000: es gibt noch dvdkopien dieses filmes
+ORA-06512: in "MVDBS10.FILME_DELETE", Zeile 11
+ORA-04088: Fehler bei der Ausfuehrung von Trigger 'MVDBS10.FILME_DELETE'
+ORA-02063: vorherige 3 lines von ORION.HELIOS.FHNW.CH
+20000. 00000 -  "%s"
+*Cause:    The stored procedure 'raise_application_error'
+           was called which causes this error to be generated.
+*Action:   Correct the problem as described in the error message or contact
+           the application administrator or DBA for more information.
+\end{lstlisting}
+
+Es wurden keine Daten in der Tabelle Filme gelöscht:
+
+\begin{lstlisting}
+ KATALOGNR TITEL                          MINDESTALTER    GEBUEHR
+---------- ------------------------------ ------------ ----------
+      2028 Casablanca                                9        8.5 
+      1245 Ocean's Eleven                           12        9.5 
+      2239 A Space Odyssee                          12        7.5 
+      1062 Pulp Fiction                             16        8.5 
+      1111 Erin Brockovich                           9        8.9 
+      2468 Ratatouille                               6        7.5 
 \end{lstlisting}
 
 \end{document}
