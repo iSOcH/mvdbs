@@ -90,7 +90,7 @@ END;
 Um zu überprüfen, ob der von uns erstellte Trigger ausleihen\_logger richtig funktioniert und alle verlangten Informationen in der Tabelle ausleihen\_log eingetragen sind, führen wir für jede potentielle Änderung einen Tests durch.
 
 \subsubsection{Test INSERT}
-Mit folgendem SQL-Befehl fügen wir Daten in die Tabelle ausleihen ein:
+
 Mit folgendem SQL-Befehl fügen wir Daten in die Tabelle Ausleihen ein:
 
 \begin{lstlisting}
@@ -385,15 +385,111 @@ CREATE OR REPLACE TRIGGER filme_update_katalognr
 Um zu überprüfen ob die Trigger richtig funktionieren, erstellen wir für jeden Fall zwei Tests, wobei einer der Tests das Erlaubte durchführt und der andere eine Exception verursacht.
 
 \subsubsection{Test Insert in DVD Kopien}
+Wir fügen in die Tabelle DVDKopien Daten mit einem vorhandenen FK katalognr ein:
 
+\begin{lstlisting}
+insert into dvdkopien (dvdnr,katalognr,fnr) VALUES (10001,2468,'F1')
+\end{lstlisting}
+
+Es wird keine Exception geworfen. In der Tabelle dvdkopien sind die eingefügten Daten nun ersichtlich (Zeile X und Y):
+
+\begin{lstlisting}
+     DVDNR  KATALOGNR FNR
+---------- ---------- ---
+     10001       2468 F1  
+    199004       2028 F1  
+    468123       2028 F2  
+    269260       1245 F1  
+    183669       1245 F3  
+    329270       1245 F4  
+    178643       2239 F2  
+    389653       2239 F4  
+    158234       1062 F3  
+    139558       2468 F2  
+    469118       2468 F2  
+    310094       1062 F2  
+\end{lstlisting}
+
+Für den zweiten Fall versuchen wir Daten einzufügen mit einem ungültigen FK katalognr:
+
+\begin{lstlisting}
+insert into dvdkopien (dvdnr,katalognr,fnr) VALUES (10002,9999,'F1')
+\end{lstlisting}
+
+Es wird eine Exception geworfen.
+
+\begin{lstlisting}
+Fehler beim Start in Zeile 1 in Befehl:
+insert into dvdkopien (dvdnr,katalognr,fnr) VALUES (10002,9999,'F1')
+Fehlerbericht:
+SQL-Fehler: ORA-20000: film mit angegebener katalognr existiert nicht
+ORA-06512: in "MVDBS10.DVDKOPIEN_INSERT", Zeile 11
+ORA-04088: Fehler bei der Ausfuehrung von Trigger 'MVDBS10.DVDKOPIEN_INSERT'
+20000. 00000 -  "%s"
+*Cause:    The stored procedure 'raise_application_error'
+           was called which causes this error to be generated.
+*Action:   Correct the problem as described in the error message or contact
+           the application administrator or DBA for more information.
+\end{lstlisting}
+
+Die Daten wurden nicht in die Tabelle dvdkopien eingefügt:
+
+\begin{lstlisting}
+     DVDNR  KATALOGNR FNR
+---------- ---------- ---
+     10001       2468 F1  
+    199004       2028 F1  
+    468123       2028 F2  
+    269260       1245 F1  
+    183669       1245 F3  
+    329270       1245 F4  
+    178643       2239 F2  
+    389653       2239 F4  
+    158234       1062 F3  
+    139558       2468 F2  
+    469118       2468 F2  
+    310094       1062 F2  
+\end{lstlisting}
 
 \subsubsection{Test Update in DVD Kopien}
-
+\begin{lstlisting}
+-- Update DVDKopien --
+----------------------
+--sucess
+update dvdkopien
+set katalognr = 2028
+where katalognr = 2468
+--exception
+update dvdkopien
+set katalognr = 9999
+where katalognr = 1001
+\end{lstlisting}
 
 \subsubsection{Test Delete in Filme}
+\begin{lstlisting}
+-- Delete Filme --
+------------------
+--sucess
+delete from filme
+where katalognr = 2588
+--exception
+delete from filme
+where katalognr = 2468
+\end{lstlisting}
 
 
-\subsubsection{Test Update in DVD Kopien}
-
+\subsubsection{Test Update in Filme}
+\begin{lstlisting}
+-- Update Filme --
+------------------
+--sucess
+update filme
+set katalognr = 1111
+where katalognr = 1672
+--exception
+update filme
+set katalognr = 2222
+where katalognr = 2468
+\end{lstlisting}
 
 \end{document}
