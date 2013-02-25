@@ -29,7 +29,7 @@ Wir erstellen einen Trigger, welcher bei den SQL Statements, die potenziell Änd
 Aufgrund der Anforderung sowohl die alten wie auch die neuen Werte zu protokollieren, muss unser Trigger jeweils vor dem Statement ausgeführt werden. In einem solchen Trigger haben wir Zugriff auf die neuen Werte.
 
 \subsection{Tabelle Ausleihen\_Log}
-Die Log-Tabelle enthält einen eigenen Primary Key (Number(6,0)). Die geforderten Angaben (User, welcher die Änderung vorgenommen hat (VARCHAR2(20)), Art der Änderung (VARCHAR(3)) sowie Zeitpunkt der Änderung (TIMESTAMP(6)) werden jeweils in einem Attribut abgelegt.
+Die Log-Tabelle enthält einen eigenen Primary Key (Number(6,0)). Die geforderten Angaben (User, welcher die Änderung vorgenommen hat (VARCHAR2(20)), Art der Änderung (VARCHAR(3)) sowie Zeitpunkt der Änderung (TIMESTAMP(6))) werden jeweils in einem Attribut abgelegt.
 
 Zusätzlich erhält die Log-Tabelle für jedes Attribut der Tabelle Ausleihen zwei Attribute. In \emph{Feldname}\_old wird der Wert vor der Änderung, in \emph{Feldname}\_new der Wert nach der Änderung festgehalten. Diese Attribute haben jeweils den selben Datentyp wie das jeweilige Attribut in der Tabelle \glqq{}Ausleihen\grqq{}.
 
@@ -94,9 +94,9 @@ Um zu überprüfen, ob der von uns erstellte Trigger ausleihen\_logger richtig f
 Mit folgendem SQL-Befehl fügen wir Daten in die Tabelle Ausleihen ein:
 
 \begin{lstlisting}
-insert into ausleihen (mnr,dvdnr,datum,rueckgabe) 
-select 'M005',468123,'01.01.2000',null from dual
-union all select 'M005',183669,'01.01.2000',null from dual;
+INSERT INTO ausleihen (mnr,dvdnr,datum,rueckgabe) 
+SELECT 'M005',468123,'01.01.2000',null FROM dual
+UNION ALL SELECT 'M005',183669,'01.01.2000',null FROM dual;
 \end{lstlisting}
 
 In der Tabelle ausleihen sind nun die eingefügten Daten in der 4. und 5. Zeile ersichtlich:
@@ -147,9 +147,10 @@ Da es sich hier um ein INSERT handelt, sind alle \_old Felder leer. Der Trigger 
 Mit folgendem SQL-Befehl ändern wir Daten in der Tabelle Ausleihen:
 
 \begin{lstlisting}
-update ausleihen
+UPDATE ausleihen
 set mnr = 'M004'
-where mnr = 'M005' and datum like '01.01.00';
+WHERE mnr = 'M005' AND 
+      datum LIKE '01.01.00';
 \end{lstlisting}
 
 In der Tabelle ausleihen sind nun die geänderten Daten in der 4. und 5. Zeile ersichtlich:
@@ -206,8 +207,9 @@ Nun sieht man, dass die \_old Felder ebenfalls ausgefüllt sind mit den Werten v
 Mit folgendem SQL-Befehl löschen wir Daten in der Tabelle Ausleihen:
 
 \begin{lstlisting}
-delete from ausleihen
-where mnr = 'M004' and datum like '01.01.00';
+DELETE FROM ausleihen
+WHERE mnr = 'M004' AND
+      datum like '01.01.00';
 \end{lstlisting}
 
 In der Tabelle ausleihen sind nun die gelöschten Daten nicht mehr ersichtlich:
@@ -271,27 +273,27 @@ Für das Verschieben der Tabelle \glqq{}Filme\grqq{} muss der Foreign Key Constr
 Als nächster Schritt wird ein Database-Link auf dem Server telesto (dort sind alle Tabellen ausser Filme) erstellt:
 
 \begin{lstlisting}
-create database link orion.helios.fhnw.ch
-connect to mvdbs10 identified by mvdbs10
-using 'orion'
+CREATE DATABASE LINK orion.helios.fhnw.ch
+CONNECT TO mvdbs10 identified by mvdbs10
+USING 'orion';
 \end{lstlisting}
 
 Damit die entfernte Tabelle so benutzt werden kann als wäre sie auf diesem Server wird noch ein SYNONYM erstellt:
 \begin{lstlisting}
-create synonym filme for filme@orion.helios.fhnw.ch;
+CREATE SYNONYM filme FOR filme@orion.helios.fhnw.ch;
 \end{lstlisting}
 
 Wir brauchen einen entsprechenden Link auch von der anderen Seite her:
 
 \begin{lstlisting}
-create database link telesto.janus.fhnw.ch
-connect to mvdbs10 identified by mvdbs10
-using 'telesto'
+CREATE DATABASE LINK telesto.janus.fhnw.ch
+CONNECT to mvdbs10 identified by mvdbs10
+USING 'telesto';
 \end{lstlisting}
 
-Damit die entfernte Tabelle so benutzt werden kann als wäre sie auf diesem Server wird noch ein SYNONYM erstellt:
+Auch hier erstellen wir ein SYNONYM
 \begin{lstlisting}
-create synonym dvdkopien for dvdkopien@telesto.janus.fhnw.ch;
+CREATE SYNONYM dvdkopien FOR dvdkopien@telesto.janus.fhnw.ch;
 \end{lstlisting}
 
 
@@ -400,8 +402,9 @@ Um zu überprüfen ob die Trigger richtig funktionieren, erstellen wir für jede
 Wir fügen in die Tabelle DVDKopien Daten mit einem vorhandenen FK katalognr ein:
 
 \begin{lstlisting}
-insert into dvdkopien (dvdnr,katalognr,fnr) select 10001,2468,'F1'
-from dual union all select 10002,2468,'F2' from dual;
+INSERT INTO dvdkopien (dvdnr,katalognr,fnr) 
+SELECT 10001,2468,'F1' FROM dual 
+UNION ALL SELECT 10002,2468,'F2' FROM dual;
 \end{lstlisting}
 
 Es wird keine Exception geworfen. In der Tabelle DVDKopien sind die eingefügten Daten nun ersichtlich (Zeile 3 und 4):
@@ -427,16 +430,18 @@ Es wird keine Exception geworfen. In der Tabelle DVDKopien sind die eingefügten
 Für den zweiten Fall versuchen wir Daten einzufügen mit einem ungültigen FK katalognr:
 
 \begin{lstlisting}
-insert into dvdkopien (dvdnr,katalognr,fnr) select 10003,2468,'F1'
-from dual union all select 10004,9999,'F2' from dual;
+INSERT INTO dvdkopien (dvdnr,katalognr,fnr) 
+SELECT 10003,2468,'F1' FROM dual 
+UNION ALL SELECT 10004,9999,'F2' FROM dual;
 \end{lstlisting}
 
 Es wird eine Exception geworfen von unserem Trigger der die Meldung "film mit angegebener katalognr existiert nicht" ausgibt.
 
 \begin{lstlisting}
 Fehler beim Start in Zeile 1 in Befehl:
-insert into dvdkopien (dvdnr,katalognr,fnr) select 10003,2468,'F1'
-from dual union all select 10004,9999,'F2' from dual
+INSERT INTO dvdkopien (dvdnr,katalognr,fnr) 
+SELECT 10003,2468,'F1' FROM dual 
+UNION ALL SELECT 10004,9999,'F2' FROM dual
 Fehlerbericht:
 SQL-Fehler: ORA-20000: film mit angegebener katalognr existiert nicht
 ORA-06512: in "MVDBS10.DVDKOPIEN_INSERT", Zeile 11
@@ -474,9 +479,9 @@ Wir haben ein Multi-Row-Insert mit zwei Zeilen durchgeführt, bei welchem eine Z
 Nun werden wir einen bestehenden Eintrag ind er Tabelle DVDKopien anpassen und die katalognr mit einem anderen gültigen Wert ersetzen:
 
 \begin{lstlisting}
-update dvdkopien
-set katalognr = 2028
-where dvdnr like '1000%'
+UPDATE dvdkopien
+SET katalognr = 2028
+WHERE dvdnr LIKE '1000%';
 \end{lstlisting}
 
 Es wird keine Exception geworfen. In der Tabelle DVDKopien sind die geänderten Daten nun ersichtlich (Zeile 3 und 4):
@@ -502,18 +507,18 @@ Es wird keine Exception geworfen. In der Tabelle DVDKopien sind die geänderten 
 Für den zweiten Fall versuchen wir den FK katalognr durch einen ungültigen FK zu ersetzen:
 
 \begin{lstlisting}
-update dvdkopien
-set katalognr = 9999
-where dvdnr like '1000%'
+UPDATE dvdkopien
+SET katalognr = 9999
+WHERE dvdnr LIKE '1000%';
 \end{lstlisting}
 
 Es wird eine Exception geworfen von unserem Trigger der die Meldung "film mit angegebener katalognr existiert nicht" ausgibt.
 
 \begin{lstlisting}
 Fehler beim Start in Zeile 1 in Befehl:
-update dvdkopien
-set katalognr = 9999
-where dvdnr like '1000%'
+UPDATE dvdkopien
+SET katalognr = 9999
+WHERE dvdnr LIKE '1000%'
 Fehlerbericht:
 SQL-Fehler: ORA-20000: film mit angegebener katalognr existiert nicht
 ORA-06512: in "MVDBS10.DVDKOPIEN_UPDATE_KATALOGNR", Zeile 11
@@ -549,9 +554,9 @@ Es wurden keine Daten in die Tabelle DVDKopien eingefügt:
 Wir ändern die katalognr eines bestehenden Filmes zu welchem keine DVDKopie existiert, auf welchen also keine Referenz vorhanden ist:
 
 \begin{lstlisting}
-update filme
-set katalognr = 1111
-where katalognr = 1672;
+UPDATE filme
+SET katalognr = 1111
+WHERE katalognr = 1672;
 \end{lstlisting}
 
 Es wird keine Exception geworfen. In der Tabelle Filme sind die geänderten Daten nun ersichtlich (Zeile 8):
@@ -571,9 +576,9 @@ Es wird keine Exception geworfen. In der Tabelle Filme sind die geänderten Date
 Für den zweiten Fall versuchen wir die katalognr eines bestehenden Filmes zu ändern, zu welchem eine DVDKopie existiert, auf welchen also eine Referenz vorhanden ist:
 
 \begin{lstlisting}
-update filme
-set katalognr = 2222
-where katalognr = 2468 or 
+UPDATE filme
+SET katalognr = 2222
+WHERE katalognr = 2468 OR 
       katalognr = 1111;
 \end{lstlisting}
 
@@ -581,9 +586,9 @@ Es wird eine Exception geworfen von unserem Trigger der die Meldung "es gibt noc
 
 \begin{lstlisting}
 Fehler beim Start in Zeile 1 in Befehl:
-update filme
-set katalognr = 2222
-where katalognr = 2468 or 
+UPDATE filme
+SET katalognr = 2222
+WHERE katalognr = 2468 OR 
       katalognr = 1111
 Fehlerbericht:
 SQL-Fehler: ORA-20000: es gibt noch dvdkopien dieses filmes
@@ -617,8 +622,8 @@ Auch hier wird ein Update auf mehrer Datensätze durchgeführt. Da es sich um ei
 Wir löschen einen Film, auf welchen keine Referenz verweist:
 
 \begin{lstlisting}
-delete from filme
-where katalognr = 2588
+DELETE FROM filme
+WHERE katalognr = 2588;
 \end{lstlisting}
 
 Es wird keine Exception geworfen. In der Tabelle Filme ist der Datensatz mit der katalognr 2588 nicht mehr vorhanden:
@@ -637,16 +642,16 @@ Es wird keine Exception geworfen. In der Tabelle Filme ist der Datensatz mit der
 Für den zweiten Fall versuchen wir einen Film zu löschen, zu welchem DVDKopien existieren, auf welchen also eine Referenz verweist:
 
 \begin{lstlisting}
-delete from filme
-where katalognr = 2468
+DELETE FROM filme
+WHERE katalognr = 2468;
 \end{lstlisting}
 
 Es wird eine Exception geworfen von unserem Trigger der die Meldung "es gibt noch dvdkopien dieses filmes" ausgibt.
 
 \begin{lstlisting}
 Fehler beim Start in Zeile 1 in Befehl:
-delete from filme
-where katalognr = 2468
+DELETE FROM filme
+WHERE katalognr = 2468
 Fehlerbericht:
 SQL-Fehler: ORA-20000: es gibt noch dvdkopien dieses filmes
 ORA-06512: in "MVDBS10.FILME_DELETE", Zeile 11
