@@ -435,7 +435,7 @@ SELECT 10003,2468,'F1' FROM dual
 UNION ALL SELECT 10004,9999,'F2' FROM dual;
 \end{lstlisting}
 
-Es wird eine Exception geworfen von unserem Trigger der die Meldung "film mit angegebener katalognr existiert nicht" ausgibt.
+Es wird eine Exception geworfen von unserem Trigger der die Meldung 'film mit angegebener katalognr existiert nicht' ausgibt.
 
 \begin{lstlisting}
 Fehler beim Start in Zeile 1 in Befehl:
@@ -512,7 +512,7 @@ SET katalognr = 9999
 WHERE dvdnr LIKE '1000%';
 \end{lstlisting}
 
-Es wird eine Exception geworfen von unserem Trigger der die Meldung "film mit angegebener katalognr existiert nicht" ausgibt.
+Es wird eine Exception geworfen von unserem Trigger der die Meldung 'film mit angegebener katalognr existiert nicht' ausgibt.
 
 \begin{lstlisting}
 Fehler beim Start in Zeile 1 in Befehl:
@@ -582,7 +582,7 @@ WHERE katalognr = 2468 OR
       katalognr = 1111;
 \end{lstlisting}
 
-Es wird eine Exception geworfen von unserem Trigger der die Meldung "es gibt noch dvdkopien dieses filmes" ausgibt.
+Es wird eine Exception geworfen von unserem Trigger der die Meldung 'es gibt noch dvdkopien dieses filmes' ausgibt.
 
 \begin{lstlisting}
 Fehler beim Start in Zeile 1 in Befehl:
@@ -616,7 +616,7 @@ Es wurden keine Daten in die Tabelle Filme geändert:
       2468 Ratatouille                               6        7.5 
 \end{lstlisting}
 
-Auch hier wird ein Update auf mehrer Datensätze durchgeführt. Da es sich um eine Transaktion handelt, wird keiner der beiden Datensätze angepasst, obwohl das Update beim einten Datensatz '1111' nicht gegen die referentielle Integrrität verstösst.
+Auch hier wird ein Update auf mehrer Datensätze durchgeführt. Da es sich um eine Transaktion handelt, wird keiner der beiden Datensätze angepasst, obwohl das Update beim Datensatz '1111' nicht gegen die referentielle Integrrität verstösst.
 
 \subsubsection{Test Delete in Filme}
 Wir löschen einen Film, auf welchen keine Referenz verweist:
@@ -646,7 +646,7 @@ DELETE FROM filme
 WHERE katalognr = 2468;
 \end{lstlisting}
 
-Es wird eine Exception geworfen von unserem Trigger der die Meldung "es gibt noch dvdkopien dieses filmes" ausgibt.
+Es wird eine Exception geworfen von unserem Trigger der die Meldung 'es gibt noch dvdkopien dieses filmes' ausgibt.
 
 \begin{lstlisting}
 Fehler beim Start in Zeile 1 in Befehl:
