@@ -59,23 +59,89 @@ Da die minterm predicates exponentiell in der Anzahl der simple predicates sind,
 	\neg p\textsubscript{1} \wedge \neg p\textsubscript{2} \wedge \neg p\textsubscript{3} \wedge p\textsubscript{4} \wedge ...\\
 \end{align*}
 
-
-
 Zusätzlich wissen wir, dass nicht alle Bereiche in jeder Filiale angeboten werden. Dadurch würden ebenfalls Minterme wegfallen. Das bedeutet jedoch, dass zum Beispiel in der Filiale Basel nie Lager oder Büroräumlichkeiten angeboten werden können. Würde ein solcher Datensatz trotzdem erfasst, wäre die Vollständigkeit der Relation nicht mehr gegeben. Aus diesem Grund werden diese Minterme beibehalten, was uns die Anpassung der vertretenen Bereiche in den Filialen zu einem späteren Zeitpunkt ermöglicht. Zusätzlich könnnen alle Mintermen welche keine Bereiche enthalten ebenfalls entfernt werden ( ... nicht p\textsubscript{5} und nicht p\textsubscript{6} und nicht p\textsubscript{7} und nicht p\textsubscript{8}).\newline
 Durch das entfernen von nicht relevanten Mintermen, haben wir pro Filiale noch 2\textsuperscript{4} - 1 = 15 Möglichkeiten. Das reduziert die Anzahl minterm predicates der Relation Filialen auf 60 anstatt 256.\newline
 
 Folgende minterm predicates sind sinnvoll:\newline
-\textbf{Region Basel (p1)}\newline
+\textbf{Region Basel (p1)}
+\begin{align*}
+p_1 \wedge p_5 \wedge p_6 \wedge p_7 \wedge p_8\\
+p_1 \wedge p_5 \wedge p_6 \wedge p_7 \wedge \neg p_8\\
+p_1 \wedge p_5 \wedge p_6 \wedge \neg p_7 \wedge p_8\\
+p_1 \wedge p_5 \wedge p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_1 \wedge p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge p_8\\
+p_1 \wedge p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_1 \wedge p_5 \wedge \neg p_6 \wedge  p_7 \wedge p_8\\
+p_1 \wedge p_5 \wedge \neg p_6 \wedge  p_7 \wedge \neg p_8\\
+p_1 \wedge \neg p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge p_8\\
+p_1 \wedge \neg p_5 \wedge \neg p_6 \wedge  p_7 \wedge p_8\\
+p_1 \wedge \neg p_5 \wedge \neg p_6 \wedge  p_7 \wedge \neg p_8\\
+p_1 \wedge \neg p_5 \wedge  p_6 \wedge \neg p_7 \wedge p_8\\
+p_1 \wedge \neg p_5 \wedge  p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_1 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge  p_8\\
+p_1 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge \neg p_8\\
+\end{align*}
 
-\textbf{Region Zürich (p2)}\newline
+\textbf{Region Zürich (p2)}
+\begin{align*}
+p_2 \wedge p_5 \wedge p_6 \wedge p_7 \wedge p_8\\
+p_2 \wedge p_5 \wedge p_6 \wedge p_7 \wedge \neg p_8\\
+p_2 \wedge p_5 \wedge p_6 \wedge \neg p_7 \wedge p_8\\
+p_2 \wedge p_5 \wedge p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_2 \wedge p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge p_8\\
+p_2 \wedge p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_2 \wedge p_5 \wedge \neg p_6 \wedge  p_7 \wedge p_8\\
+p_2 \wedge p_5 \wedge \neg p_6 \wedge  p_7 \wedge \neg p_8\\
+p_2 \wedge \neg p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge p_8\\
+p_2 \wedge \neg p_5 \wedge \neg p_6 \wedge  p_7 \wedge p_8\\
+p_2 \wedge \neg p_5 \wedge \neg p_6 \wedge  p_7 \wedge \neg p_8\\
+p_2 \wedge \neg p_5 \wedge  p_6 \wedge \neg p_7 \wedge p_8\\
+p_2 \wedge \neg p_5 \wedge  p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_2 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge  p_8\\
+p_2 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge \neg p_8\\
+\end{align*}
 
-\textbf{Region Solothurn (p3)}\newline
+\textbf{Region Solothurn (p3)}
+\begin{align*}
+p_3 \wedge p_5 \wedge p_6 \wedge p_7 \wedge p_8\\
+p_3 \wedge p_5 \wedge p_6 \wedge p_7 \wedge \neg p_8\\
+p_3 \wedge p_5 \wedge p_6 \wedge \neg p_7 \wedge p_8\\
+p_3 \wedge p_5 \wedge p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_3 \wedge p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge p_8\\
+p_3 \wedge p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_3 \wedge p_5 \wedge \neg p_6 \wedge  p_7 \wedge p_8\\
+p_3 \wedge p_5 \wedge \neg p_6 \wedge  p_7 \wedge \neg p_8\\
+p_3 \wedge \neg p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge p_8\\
+p_3 \wedge \neg p_5 \wedge \neg p_6 \wedge  p_7 \wedge p_8\\
+p_3 \wedge \neg p_5 \wedge \neg p_6 \wedge  p_7 \wedge \neg p_8\\
+p_3 \wedge \neg p_5 \wedge  p_6 \wedge \neg p_7 \wedge p_8\\
+p_3 \wedge \neg p_5 \wedge  p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_3 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge  p_8\\
+p_3 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge \neg p_8\\
+\end{align*}
 
-\textbf{Region Aargau (p4)}\newline
+\textbf{Region Aargau (p4)}
+\begin{align*}
+p_4 \wedge p_5 \wedge p_6 \wedge p_7 \wedge p_8\\
+p_4 \wedge p_5 \wedge p_6 \wedge p_7 \wedge \neg p_8\\
+p_4 \wedge p_5 \wedge p_6 \wedge \neg p_7 \wedge p_8\\
+p_4 \wedge p_5 \wedge p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_4 \wedge p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge p_8\\
+p_4 \wedge p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_4 \wedge p_5 \wedge \neg p_6 \wedge  p_7 \wedge p_8\\
+p_4 \wedge p_5 \wedge \neg p_6 \wedge  p_7 \wedge \neg p_8\\
+p_4 \wedge \neg p_5 \wedge \neg p_6 \wedge \neg p_7 \wedge p_8\\
+p_4 \wedge \neg p_5 \wedge \neg p_6 \wedge  p_7 \wedge p_8\\
+p_4 \wedge \neg p_5 \wedge \neg p_6 \wedge  p_7 \wedge \neg p_8\\
+p_4 \wedge \neg p_5 \wedge  p_6 \wedge \neg p_7 \wedge p_8\\
+p_4 \wedge \neg p_5 \wedge  p_6 \wedge \neg p_7 \wedge \neg p_8\\
+p_4 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge  p_8\\
+p_4 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge \neg p_8\\
+\end{align*}
+
 
 \subsection{Relation Besitzer}
-In der Relation Besitzer haben wir 5 verschiedene simple predicates, womit wir 2\textsuperscript{5} = 32 minterm predicates erhalten. Da ein Besitzer nur einen Wohnort bzw. eine PLZ hat, kann nur genau ein simple predicate zutreffen. Das bedeutet unsere minterm predicates können von 32 auf 5 Möglichkeiten reduziert werden.\newline
-
+In der Relation Besitzer haben wir 5 verschiedene simple predicates, womit wir 2\textsuperscript{5} = 32 minterm predicates erhalten. Da ein Besitzer nur einen Wohnort bzw. eine PLZ hat, kann nur genau ein simple predicate zutreffen. Das bedeutet unsere minterm predicates können von 32 auf 5 Möglichkeiten reduziert werden.
 \begin{align*}
 b_1 \wedge \neg b_2 \wedge \neg b_3 \wedge \neg b_4 \wedge \neg b_5\\
 \neg b_1 \wedge  b_2 \wedge \neg b_3 \wedge \neg b_4 \wedge \neg b_5\\
