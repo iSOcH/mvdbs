@@ -17,7 +17,7 @@
 \maketitle
 
 \section{Simple predicates}
-\subsection{Filialen}
+\subsection{Relation Filialen}
 Die Relation Filialen enthält die Spalten FNr, Region und Bereich. Da FNr der Primärschlüssel der Relation ist, wird dieser nicht als simple predicate verwendet. Der Primärschlüssel ist eindeutig in der Relation und daher kein sinnvoller Wert für simple predicates. Die Werte in den Spalten Region und Bereich können jedoch zu folgenden simple predicates unterteilt werden.
 
 p\textsubscript{1}: Region = 'Basel'\newline
@@ -30,8 +30,28 @@ p\textsubscript{6}: Bereich = 'Büroräumlichkeiten'\newline
 p\textsubscript{7}: Bereich = 'Häuser'\newline
 p\textsubscript{8}: Bereich = 'Lager'\newline
 
+\textbf{Vollständigkeit \& Minimalität: }
+Die Vollständigkeit und Minimalität wurde eingehalten, da alle simple predicates relevant sind und nach deren Häufigkeit aufgeteilt werden können.\newline
+Zugriff: Wohungen (sehr häufig),  Büroräumlichkeiten \& Lager (häufig), Häuser (selten).\newline
+Relevanz: Basel (Wh, Hs), Zürich (Br, Wh, Hs, Lg), Solothurn (Br, Wh, Hs, Lg), Aargau (Wh, Hs, Lg).
 
 
+\subsection{Relation Besitzer}
+Die Relation Besitzer enthält die Spalten BNr, Name, PLZ und Ort. Wie bereits in der Relation Filialen wird auch hier der Primärschlüssel BNr nicht als simple predicate verwendet. Die Spalte Namen kann ebenfalls nicht sinnvoll verwendet werden da es eine zu grosse Menge an Fragmenten geben würde, welche zudem nicht den regionalen Filialen zugewiesen werden können. Eine Ortschaft hat nicht immer eine eindeutige PLZ (Bsp: Bern hat 3000-3030), weshalb sie ebenfalls nicht verwendet werden kann. Als simple predicate wird daher nur die PLZ benutzt. Da Basel, Solothurn und Aargau nah beisammen liegen, ist eine optimale Aufteilung der PLZ-Bereiche nicht sehr einfach. Wir haben uns für folgende Aufteilung entschieden.
+
+b\textsubscript{1}: PLZ = BETWEEN 1000 AND 3999 (Region Solothurn)\newline
+b\textsubscript{2}: PLZ = BETWEEN 4000 AND 4499 (Region Basel)\newline
+b\textsubscript{3}: PLZ = BETWEEN 4500 AND 4999 (Region Solothurn)\newline
+b\textsubscript{4}: PLZ = BETWEEN 5000 AND 6999 (Region Aargau)\newline
+b\textsubscript{5}: PLZ = BETWEEN 7000 AND 9999 (Region Zürich)\newline
+
+\textbf{Vollständigkeit \& Minimalität: } ????
+
+\section{Minterm predicates}
+\subsection{Relation Filialen}
+Da die minterm predicates exponentiell in der Anzahl der simple predicates sind, haben wir bei der Relation Filialen 2\textsuperscript{8} = 256 Möglichkeiten minterm perdicates zu erstellen. Davon können wir aber nicht sinnvolle predicates ausschliessen.\newline
+
+Alle Kombinationen von p1 bis p4 (Bsp: p1   p2  )
 
 
 
