@@ -1,0 +1,39 @@
+\documentclass[11pt,a4paper,parskip=half]{scrartcl}
+\usepackage{ngerman}
+\usepackage[utf8]{inputenc}
+\usepackage[colorlinks=false,pdfborder={0 0 0}]{hyperref}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{textcomp}
+\usepackage{geometry}
+\geometry{a4paper, left=30mm, right=25mm, top=30mm, bottom=35mm} 
+\usepackage{listings}
+\lstset{breaklines=true, breakatwhitespace=true, basicstyle=\scriptsize, numbers=left}
+\title{mvdbs: Übung DreamHome I}
+\author{Tobias Lerch, Yanick Eberle, Pascal Schwarz}
+\begin{document}
+\maketitle
+
+\section{Simple predicates}
+\subsection{Filialen}
+Die Relation Filialen enthält die Spalten FNr, Region und Bereich. Da FNr der Primärschlüssel der Relation ist, wird dieser nicht als simple predicate verwendet. Der Primärschlüssel ist eindeutig in der Relation und daher kein sinnvoller Wert für simple predicates. Die Werte in den Spalten Region und Bereich können jedoch zu folgenden simple predicates unterteilt werden.
+
+p\textsubscript{1}: Region = 'Basel'\newline
+p\textsubscript{2}: Region = 'Zürich'\newline
+p\textsubscript{3}: Region = 'Solothurn'\newline
+p\textsubscript{4}: Region = 'Aargau'\newline
+\newline
+p\textsubscript{5}: Bereich = 'Wohnungen'\newline
+p\textsubscript{6}: Bereich = 'Büroräumlichkeiten'\newline
+p\textsubscript{7}: Bereich = 'Häuser'\newline
+p\textsubscript{8}: Bereich = 'Lager'\newline
+
+
+
+
+
+
+
+\end{document}
