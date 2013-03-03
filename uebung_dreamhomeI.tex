@@ -50,7 +50,7 @@ b\textsubscript{5}: PLZ = BETWEEN 7000 AND 9999 (Region Zürich)\newline
 
 \section{Minterm predicates}
 \subsection{Relation Filialen}
-Da die minterm predicates exponentiell in der Anzahl der simple predicates sind, haben wir bei der Relation Filialen 2\textsuperscript{8} = 256 Möglichkeiten minterm perdicates zu erstellen. Davon können wir aber nicht sinnvolle predicates ausschliessen. Da eine Filiale jeweils nur in einer Region tätig ist, können wir die minterm predicated auf folgende Kombinationen reduzieren.
+Da die minterm predicates exponentiell in der Anzahl der simple predicates sind, haben wir bei der Relation Filialen 2\textsuperscript{8} = 256 Möglichkeiten minterm perdicates zu erstellen. Davon können wir aber nicht sinnvolle predicates ausschliessen. Da eine Filiale jeweils nur in einer Region tätig ist, können wir die minterm predicates auf folgende Kombinationen reduzieren.
 
 \begin{align*}
 	p\textsubscript{1} \wedge \neg p\textsubscript{2} \wedge \neg p\textsubscript{3} \wedge \neg p\textsubscript{4} \wedge ...\\
@@ -59,11 +59,11 @@ Da die minterm predicates exponentiell in der Anzahl der simple predicates sind,
 	\neg p\textsubscript{1} \wedge \neg p\textsubscript{2} \wedge \neg p\textsubscript{3} \wedge p\textsubscript{4} \wedge ...\\
 \end{align*}
 
-Zusätzlich wissen wir, dass nicht alle Bereiche in jeder Filiale angeboten werden. Dadurch würden ebenfalls Minterme wegfallen. Das bedeutet jedoch, dass zum Beispiel in der Filiale Basel nie Lager oder Büroräumlichkeiten angeboten werden können. Würde ein solcher Datensatz trotzdem erfasst, wäre die Vollständigkeit der Relation nicht mehr gegeben. Aus diesem Grund werden diese Minterme beibehalten, was uns die Anpassung der vertretenen Bereiche in den Filialen zu einem späteren Zeitpunkt ermöglicht. Zusätzlich könnnen alle Mintermen welche keine Bereiche enthalten ebenfalls entfernt werden ( ... nicht p\textsubscript{5} und nicht p\textsubscript{6} und nicht p\textsubscript{7} und nicht p\textsubscript{8}).\newline
-Durch das entfernen von nicht relevanten Mintermen, haben wir pro Filiale noch 2\textsuperscript{4} - 1 = 15 Möglichkeiten. Das reduziert die Anzahl minterm predicates der Relation Filialen auf 60 anstatt 256.\newline
+Zusätzlich wissen wir, dass nicht alle Bereiche in jeder Filiale angeboten werden. Dadurch würden ebenfalls Minterme wegfallen. Das bedeutet jedoch, dass zum Beispiel in der Filiale Basel nie Lager oder Büroräumlichkeiten angeboten werden können. Würde ein solcher Datensatz trotzdem erfasst, wäre die Vollständigkeit der Relation nicht mehr gegeben. Aus diesem Grund werden diese Minterme beibehalten, was uns die Anpassung der vertretenen Bereiche in den Filialen zu einem späteren Zeitpunkt ermöglicht. Zusätzlich könnnen alle Minterme, welche keine Bereiche enthalten ebenfalls entfernt werden ($\neg p\textsubscript{5} \wedge \neg p\textsubscript{6} \wedge \neg p\textsubscript{7} \wedge \neg p\textsubscript{8}$).
 
-Folgende minterm predicates sind sinnvoll:\newline
-\textbf{Region Basel (p1)}
+Durch das Entfernen von nicht relevanten Mintermen haben wir pro Filiale noch 2\textsuperscript{4} - 1 = 15 Möglichkeiten. Das reduziert die Anzahl minterm predicates der Relation Filialen von 256 auf 60.
+
+\subsubsection{Sinnvolle minterm predicates Region Basel (p1)}
 \begin{align*}
 p_1 \wedge p_5 \wedge p_6 \wedge p_7 \wedge p_8\\
 p_1 \wedge p_5 \wedge p_6 \wedge p_7 \wedge \neg p_8\\
@@ -82,7 +82,7 @@ p_1 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge  p_8\\
 p_1 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge \neg p_8\\
 \end{align*}
 
-\textbf{Region Zürich (p2)}
+\subsubsection{Sinnvolle minterm predicates Region Zürich (p2)}
 \begin{align*}
 p_2 \wedge p_5 \wedge p_6 \wedge p_7 \wedge p_8\\
 p_2 \wedge p_5 \wedge p_6 \wedge p_7 \wedge \neg p_8\\
@@ -101,7 +101,7 @@ p_2 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge  p_8\\
 p_2 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge \neg p_8\\
 \end{align*}
 
-\textbf{Region Solothurn (p3)}
+\subsubsection{Sinnvolle minterm predicates Region Solothurn (p3)}
 \begin{align*}
 p_3 \wedge p_5 \wedge p_6 \wedge p_7 \wedge p_8\\
 p_3 \wedge p_5 \wedge p_6 \wedge p_7 \wedge \neg p_8\\
@@ -120,7 +120,7 @@ p_3 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge  p_8\\
 p_3 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge \neg p_8\\
 \end{align*}
 
-\textbf{Region Aargau (p4)}
+\subsubsection{Sinnvolle minterm predicates Region Aargau (p4)}
 \begin{align*}
 p_4 \wedge p_5 \wedge p_6 \wedge p_7 \wedge p_8\\
 p_4 \wedge p_5 \wedge p_6 \wedge p_7 \wedge \neg p_8\\
