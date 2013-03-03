@@ -396,7 +396,7 @@ CREATE OR REPLACE TRIGGER filme_delete
 \end{lstlisting}
 
 \subsection{Tests}
-Um zu überprüfen ob die Trigger richtig funktionieren, erstellen wir für jeden Fall zwei Tests, wobei einer der Tests das Erlaubte durchführt und der andere eine Exception verursacht.
+Um zu überprüfen ob die Trigger richtig funktionieren, erstellen wir für jeden Fall zwei Tests, wobei einer der Tests das Erlaubte durchführt und der Andere eine Exception verursachen sollte.
 
 \subsubsection{Test Insert in DVD Kopien}
 Wir fügen in die Tabelle DVDKopien Daten mit einem vorhandenen FK katalognr ein:
@@ -476,7 +476,7 @@ Es wurden keine Daten in die Tabelle DVDKopien eingefügt:
 Wir haben ein Multi-Row-Insert mit zwei Zeilen durchgeführt, bei welchem eine Zeile korrekt war und die andere einen ungültigen FK katalognr enthalten hat. Da es sich um eine Transaktion handelt, darf alles oder gar nichts eingefügt werden. Daher ist es korrekt, dass das ganze Statement nicht ausgeführt wurde und somit keine Daten in die Tabelle DVDKopien eingefügt wurden.
 
 \subsubsection{Test Update in DVD Kopien}
-Nun werden wir einen bestehenden Eintrag ind er Tabelle DVDKopien anpassen und die katalognr mit einem anderen gültigen Wert ersetzen:
+Nun werden wir einen bestehenden Eintrag in der Tabelle DVDKopien anpassen und die katalognr mit einem anderen gültigen Wert ersetzen:
 
 \begin{lstlisting}
 UPDATE dvdkopien
