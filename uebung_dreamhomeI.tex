@@ -139,12 +139,6 @@ p_4 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge  p_8\\
 p_4 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge \neg p_8\\
 \end{align*}
 
-\section{Definition Fragmente}
-\subsection{Relation Filiale}
-
-FILIALE$_1$: $\sigma$\textsubscript{}\\
-
-
 \subsection{Relation Besitzer}
 In der Relation Besitzer haben wir 5 verschiedene simple predicates, womit wir 2\textsuperscript{5} = 32 minterm predicates erhalten. Da ein Besitzer nur einen Wohnort bzw. eine PLZ hat, kann nur genau ein simple predicate zutreffen. Das bedeutet unsere minterm predicates können von 32 auf 5 Möglichkeiten reduziert werden.
 \begin{align*}
@@ -155,6 +149,13 @@ b_1 \wedge \neg b_2 \wedge \neg b_3 \wedge \neg b_4 \wedge \neg b_5\\
 \neg b_1 \wedge \neg b_2 \wedge \neg b_3 \wedge \neg b_4 \wedge b_5\\
 \end{align*}
 
+\section{Definition Fragmente}
+\subsection{Relation Filiale}
+
+FILIALE$_1$: $\sigma$\textsubscript{}\\
+
+
+\subsection{Relation Besitzer}
 
 BESITZER\textsubscript{1}: $\sigma$\textsubscript{PLZ  BETWEEN 1000 AND 3999 OR BETWEEN 4500 AND 4999} (BESITZER)\\
 BESITZER\textsubscript{2}: $\sigma$\textsubscript{PLZ  BETWEEN 4000 AND 4499} (BESITZER)\\
@@ -164,8 +165,39 @@ BESITZER\textsubscript{4}: $\sigma$\textsubscript{PLZ  BETWEEN 7000 AND 9999} (B
 
 \section{Nachweis der Korrektheit}
 \subsection{Relation Filiale}
-Die Fragmente sind vollständig, da alle R in einem R\textsubscript{i} enthalten sind.
+Die Fragmente sind vollständig, da alle Datenelemente von R in einem R\textsubscript{i} enthalten sind:\\\\
+!!TODO!!\\
+\begin{align*}
+p\textsubscript{1} \wedge p\textsubscript{3} \subset  FILIALE\textsubscript{1}\\
+p\textsubscript{2} \subset  FILIALE\textsubscript{2}\\
+p\textsubscript{4} \subset  FILIALE\textsubscript{3}\\
+p\textsubscript{5} \subset  FILIALE\textsubscript{4}\\
+\end{align*}
+R ist rekonstruierbar mit dem Operator Vereinigung:\\\\
+!!TODO!!\\
+\begin{align*}
+FILIALE\textsubscript{1} \cup FILIALE\textsubscript{2} \cup FILIALE\textsubscript{3} \cup FILIALE\textsubscript{4}\\
+\end{align*}
+Die Fragmente sind paarweise disjunkt, da sie sich gegenseitig ausschliessen.\\
 
 \subsection{Relation Besitzer}
+Die Fragmente sind vollständig, da alle Datenelemente von R in einem R\textsubscript{i} enthalten sind:\\
+\begin{align*}
+b\textsubscript{1} \wedge b\textsubscript{3} \subset  BESITZER\textsubscript{1}\\
+b\textsubscript{2} \subset  BESITZER\textsubscript{2}\\
+b\textsubscript{4} \subset  BESITZER\textsubscript{3}\\
+b\textsubscript{5} \subset  BESITZER\textsubscript{4}\\
+\end{align*}
+R ist rekonstruierbar mit dem Operator Vereinigung:\\
+\begin{align*}
+BESITZER\textsubscript{1} \cup BESITZER\textsubscript{2} \cup BESITZER\textsubscript{3} \cup BESITZER\textsubscript{4}\\
+\end{align*}
+Die Fragmente sind paarweise disjunkt, da sie sich gegenseitig ausschliessen.
+
+\section{DHF restliche Relationen}
+Die DHF der restliche Relationen wird so und so durchgeführt weil, blablabla
+
+\section{Definition Fragmente DHF}
+
 
 \end{document}
