@@ -40,17 +40,17 @@ Relevanz: Basel (Wh, Hs), Zürich (Br, Wh, Hs, Lg), Solothurn (Br, Wh, Hs, Lg), 
 \subsection{Relation Besitzer}
 Die Relation Besitzer enthält die Spalten BNr, Name, PLZ und Ort. Wie bereits in der Relation Filialen wird auch hier der Primärschlüssel BNr nicht als simple predicate verwendet. Die Spalte Namen kann ebenfalls nicht sinnvoll verwendet werden da es eine zu grosse Menge an Fragmenten geben würde, welche zudem nicht den regionalen Filialen zugewiesen werden können. Eine Ortschaft hat nicht immer eine eindeutige PLZ (Bsp: Bern hat 3000-3030), weshalb sie ebenfalls nicht verwendet werden kann. Als simple predicate wird daher nur die PLZ benutzt. Da Basel, Solothurn und Aargau nah beisammen liegen, ist eine optimale Aufteilung der PLZ-Bereiche nicht sehr einfach. Wir haben uns für folgende Aufteilung entschieden.
 
-b\textsubscript{1}: PLZ = BETWEEN 1000 AND 3999 (Region Solothurn)\newline
-b\textsubscript{2}: PLZ = BETWEEN 4000 AND 4499 (Region Basel)\newline
-b\textsubscript{3}: PLZ = BETWEEN 4500 AND 4999 (Region Solothurn)\newline
-b\textsubscript{4}: PLZ = BETWEEN 5000 AND 6999 (Region Aargau)\newline
-b\textsubscript{5}: PLZ = BETWEEN 7000 AND 9999 (Region Zürich)\newline
+b\textsubscript{1}: PLZ BETWEEN 1000 AND 3999 (Region Solothurn)\newline
+b\textsubscript{2}: PLZ BETWEEN 4000 AND 4499 (Region Basel)\newline
+b\textsubscript{3}: PLZ BETWEEN 4500 AND 4999 (Region Solothurn)\newline
+b\textsubscript{4}: PLZ BETWEEN 5000 AND 6999 (Region Aargau)\newline
+b\textsubscript{5}: PLZ BETWEEN 7000 AND 9999 (Region Zürich)\newline
 
 \textbf{Vollständigkeit \& Minimalität: } ????
 
 \section{Minterm predicates}
 \subsection{Relation Filialen}
-Da die minterm predicates exponentiell in der Anzahl der simple predicates sind, haben wir bei der Relation Filialen 2\textsuperscript{8} = 256 Möglichkeiten minterm perdicates zu erstellen. Davon können wir aber nicht sinnvolle predicates ausschliessen. Da eine Filiale jeweils nur in einer Region tätig ist, können wir die minterm predicates auf folgende Kombinationen reduzieren.
+Da die minterm predicates exponentiell in der Anzahl der simple predicates sind, haben wir bei der Relation Filialen 2\textsuperscript{8} = 256 Möglichkeiten, minterm perdicates zu erstellen. Davon können wir aber nicht sinnvolle predicates ausschliessen. Da eine Filiale jeweils nur in einer Region tätig ist, können wir die minterm predicates auf folgende Kombinationen reduzieren.
 
 \begin{align*}
 	p\textsubscript{1} \wedge \neg p\textsubscript{2} \wedge \neg p\textsubscript{3} \wedge \neg p\textsubscript{4} \wedge ...\\
