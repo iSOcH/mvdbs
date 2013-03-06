@@ -139,12 +139,6 @@ p_4 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge  p_8\\
 p_4 \wedge \neg p_5 \wedge  p_6 \wedge  p_7 \wedge \neg p_8\\
 \end{align*}
 
-\section{Definition Fragmente}
-\subsection{Relation Filiale}
-
-FILIALE$_1$: $\sigma$\textsubscript{}\\
-
-
 \subsection{Relation Besitzer}
 In der Relation Besitzer haben wir 5 verschiedene simple predicates, womit wir 2\textsuperscript{5} = 32 minterm predicates erhalten. Da ein Besitzer nur einen Wohnort bzw. eine PLZ hat, kann nur genau ein simple predicate zutreffen. Das bedeutet unsere minterm predicates können von 32 auf 5 Möglichkeiten reduziert werden.
 \begin{align*}
@@ -155,11 +149,36 @@ b_1 \wedge \neg b_2 \wedge \neg b_3 \wedge \neg b_4 \wedge \neg b_5\\
 \neg b_1 \wedge \neg b_2 \wedge \neg b_3 \wedge \neg b_4 \wedge b_5\\
 \end{align*}
 
+\section{Definition Fragmente}
+\subsection{Relation Filiale}
+DreamHome hat vier Rechenzentren in Zürich, Olten, Aarau und Basel. Wir haben bereits bei den Minterms eine Aufteilung nach Regionen gemacht und können nun die Relation einfach fragmentieren und auf die verschiedenen Server verteilen. 
+
+FILIALE$_1$: $\sigma$\textsubscript{Region = 'BS' AND (Bereich = 'Wh'' OR Bereich = 'Br' OR Bereich = 'Hs' OR Bereich = 'Lg')}(FILIALE)\\
+FILIALE$_2$: $\sigma$\textsubscript{Region = 'ZH' AND (Bereich = 'Wh'' OR Bereich = 'Br' OR Bereich = 'Hs' OR Bereich = 'Lg')}(FILIALE)\\
+FILIALE$_3$: $\sigma$\textsubscript{Region = 'SO' AND (Bereich = 'Wh'' OR Bereich = 'Br' OR Bereich = 'Hs' OR Bereich = 'Lg')}(FILIALE)\\
+FILIALE$_4$: $\sigma$\textsubscript{Region = 'AG' AND (Bereich = 'Wh'' OR Bereich = 'Br' OR Bereich = 'Hs' OR Bereich = 'Lg')}(FILIALE)
+
+Bereiche welche im Moment in einer Region nicht angeboten werden, sind trotzdem in der Fragmentierung enthalten. Somit ist die Vollständigkeit immer gegeben und Anpassungen können ohne grossen Aufwand durchgeführt werden. Die Fragmente werden nun folgendermassen auf die Server verteilt.
+
+Server Orion (Basel) : Fragment FILIALE$_1$\\
+Server Ananke (Zürich) : Fragment FILIALE$_2$\\
+Server Telesto (Olten) : Fragment FILIALE$_3$\\
+Server Ganymed (Aarau) : Fragment FILIALE$_4$
+
+\subsection{Relation Besitzer}
+Auch bei der Relation Besitzer, haben wir minterm predicates bereits so gewählt, dass sie optimal auf die vier Serverstandorte verteilt werden können. Dazu wurden die Postleitzahlen in 5 verschiedene Bereiche unterteilt. Die Relation Besitzer wird somit in folgende vier Fragmente unterteilt.
 
 BESITZER\textsubscript{1}: $\sigma$\textsubscript{PLZ  BETWEEN 1000 AND 3999 OR BETWEEN 4500 AND 4999} (BESITZER)\\
 BESITZER\textsubscript{2}: $\sigma$\textsubscript{PLZ  BETWEEN 4000 AND 4499} (BESITZER)\\
 BESITZER\textsubscript{3}: $\sigma$\textsubscript{PLZ  BETWEEN 5000 AND 6999} (BESITZER)\\
-BESITZER\textsubscript{4}: $\sigma$\textsubscript{PLZ  BETWEEN 7000 AND 9999} (BESITZER)\\
+BESITZER\textsubscript{4}: $\sigma$\textsubscript{PLZ  BETWEEN 7000 AND 9999} (BESITZER)
+
+Die Fragmente werden nun dem Serverstandort in der jeweiligen Region zugeteilt.
+
+Server Orion (Basel) : Fragment BESITZER$_2$\\
+Server Ananke (Zürich) : Fragment BESITZER$_4$\\
+Server Telesto (Olten) : Fragment BESITZER$_1$\\
+Server Ganymed (Aarau) : Fragment BESITZER$_3$
 
 
 \section{Nachweis der Korrektheit}
