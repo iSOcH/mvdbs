@@ -9,6 +9,7 @@
 \usepackage{textcomp}
 \usepackage{geometry}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \geometry{a4paper, left=30mm, right=25mm, top=30mm, bottom=35mm} 
 \usepackage{listings}
 \lstset{breaklines=true, breakatwhitespace=true, basicstyle=\scriptsize, numbers=left}
@@ -186,5 +187,38 @@ Server Ganymed (Aarau) : Fragment BESITZER$_3$
 Die Fragmente sind vollständig, da alle R in einem R\textsubscript{i} enthalten sind.
 
 \subsection{Relation Besitzer}
+
+\section{Abgeleitete horizontale Fragmentierung (DHF)}
+\subsection{Relation Mitarbeiter}
+Wie im Datenbankentwurf ersichtlich kann ein Mitarbeiter nur in einer Filiale angestellt sein, deshalb wird die Relation Mitarbeiter gleich Fragmentiert wie die Relation Filiale. 
+
+MITARBEITER$_1$: (MITARBEITER) $\vartriangleright$ (FILIALE$_1$)\\
+MITARBEITER$_2$: (MITARBEITER) $\vartriangleright$ (FILIALE$_2$)\\
+MITARBEITER$_3$: (MITARBEITER) $\vartriangleright$ (FILIALE$_3$)\\
+MITARBEITER$_4$: (MITARBEITER) $\vartriangleright$ (FILIALE$_4$)
+
+\subsection{Relation Kunde}
+Für jeden Kunde ist eine Filiale zuständig, welche den Kunden betreut und Besichtigungen von Mietobjekten vereinbart. Aus diesem Grund wird auch die Relation Kunde genau gleich wie die Relation Filiale fragmentiert. 
+
+KUNDE$_1$: (KUNDE)  $\vartriangleright$ (FILIALE$_1$)\\
+KUNDE$_2$: (KUNDE)  $\vartriangleright$ (FILIALE$_2$)\\
+KUNDE$_3$: (KUNDE)  $\vartriangleright$ (FILIALE$_3$)\\
+KUNDE$_4$: (KUNDE)  $\vartriangleright$ (FILIALE$_4$)
+
+\subsection{Relation Mietobjekt}
+Die Relation Mietobjekt hat zwei Verbindungen (Besitzer \& Filiale). Wir gehen davon aus, dass die Mietobjekte wie die Kunden von der in dieser Region zuständigen Filiale verwaltet werden. Das sinnvollste ist somit die Relation Mietobjekt wie die Relation Filiale zu fragmentieren. Der Besitzer muss nicht zwingend in der selben Region wohnen wie sein Mietobjekt, deshalb ist es nicht sinnvoll die Mietobjekte wie die Relation Besitzer zu fragmentieren.
+
+MIETOBJEKT$_1$: (MIETOBJEKT) $\vartriangleright$ (FILIALE$_1$)\\
+MIETOBJEKT$_2$: (MIETOBJEKT) $\vartriangleright$ (FILIALE$_2$)\\
+MIETOBJEKT$_3$: (MIETOBJEKT) $\vartriangleright$ (FILIALE$_3$)\\
+MIETOBJEKT$_4$: (MIETOBJEKT) $\vartriangleright$ (FILIALE$_4$)
+
+\subsection{Relation Besichtigung}
+Die Relation Besichtigung hat ebenfalls zwei Verbindungen (Kunde \& Mietobjekt). Ausserdem werden die Relationen Mietobjekt und Kunde gleich wie die Relation Filiale fragmentiert, somit wird auch die Relaion Besichtigung schlussendlich so fragmentiert. Deshalb ist es möglich die Fragmentierung von beiden Relationen abzuleiten. Da eine Besichtigung immer auf ein Mietobjekte bezogen ist, haben wir uns entschieden die Relation Besichtigung gleich wie die Relation Mietobjekt zu fragmentieren.
+
+BESICHTIGUNG$_1$: (BESICHTIGUNG) $\vartriangleright$ (MIETOBJEKT$_1$)\\
+BESICHTIGUNG$_2$: (BESICHTIGUNG) $\vartriangleright$ (MIETOBJEKT$_2$)\\
+BESICHTIGUNG$_3$: (BESICHTIGUNG) $\vartriangleright$ (MIETOBJEKT$_3$)\\
+BESICHTIGUNG$_4$: (BESICHTIGUNG) $\vartriangleright$ (MIETOBJEKT$_4$)
 
 \end{document}
