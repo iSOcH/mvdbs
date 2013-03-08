@@ -152,7 +152,7 @@ b_1 \wedge \neg b_2 \wedge \neg b_3 \wedge \neg b_4 \wedge \neg b_5\\
 
 \section{Definition Fragmente}
 \subsection{Relation Filiale}
-DreamHome hat vier Rechenzentren in Zürich, Olten, Aarau und Basel. Wir haben bereits bei den Minterms eine Aufteilung nach Regionen gemacht und können nun die Relation einfach fragmentieren und auf die verschiedenen Server verteilen. 
+DreamHome hat je ein Rechenzentrum in Zürich, Olten, Aarau und Basel. Wir haben bereits bei den Minterms eine Aufteilung nach Regionen gemacht und können nun die Relation einfach fragmentieren und auf die verschiedenen Server verteilen. 
 
 FILIALE$_1$: $\sigma$\textsubscript{Region = 'BS' AND (Bereich = 'Wh'' OR Bereich = 'Br' OR Bereich = 'Hs' OR Bereich = 'Lg')}(FILIALE)\\
 FILIALE$_2$: $\sigma$\textsubscript{Region = 'ZH' AND (Bereich = 'Wh'' OR Bereich = 'Br' OR Bereich = 'Hs' OR Bereich = 'Lg')}(FILIALE)\\
@@ -167,9 +167,9 @@ Server Telesto (Olten) : Fragment FILIALE$_3$\\
 Server Ganymed (Aarau) : Fragment FILIALE$_4$
 
 \subsection{Relation Besitzer}
-Auch bei der Relation Besitzer, haben wir minterm predicates bereits so gewählt, dass sie optimal auf die vier Serverstandorte verteilt werden können. Dazu wurden die Postleitzahlen in 5 verschiedene Bereiche unterteilt. Die Relation Besitzer wird somit in folgende vier Fragmente unterteilt.
+Auch bei der Relation Besitzer haben wir minterm predicates bereits so gewählt, dass sie optimal auf die vier Serverstandorte verteilt werden können. Dazu wurden die Postleitzahlen in 5 verschiedene Bereiche unterteilt. Die Relation Besitzer wird somit in folgende vier Fragmente unterteilt.
 
-BESITZER\textsubscript{1}: $\sigma$\textsubscript{PLZ  BETWEEN 1000 AND 3999 OR BETWEEN 4500 AND 4999} (BESITZER)\\
+BESITZER\textsubscript{1}: $\sigma$\textsubscript{PLZ  BETWEEN 1000 AND 3999 OR PLZ BETWEEN 4500 AND 4999} (BESITZER)\\
 BESITZER\textsubscript{2}: $\sigma$\textsubscript{PLZ  BETWEEN 4000 AND 4499} (BESITZER)\\
 BESITZER\textsubscript{3}: $\sigma$\textsubscript{PLZ  BETWEEN 5000 AND 6999} (BESITZER)\\
 BESITZER\textsubscript{4}: $\sigma$\textsubscript{PLZ  BETWEEN 7000 AND 9999} (BESITZER)\\
@@ -201,7 +201,7 @@ Die Fragmente sind paarweise disjunkt, da sie sich gegenseitig ausschliessen.
 \subsection{Relation Besitzer}
 Die Fragmente sind vollständig, da alle Datenelemente von R in einem R\textsubscript{i} enthalten sind:\\
 \begin{align*}
-b\textsubscript{1} \wedge b\textsubscript{3} \subset  BESITZER\textsubscript{1}\\
+b\textsubscript{1} \vee b\textsubscript{3} \subset  BESITZER\textsubscript{1}\\
 b\textsubscript{2} \subset  BESITZER\textsubscript{2}\\
 b\textsubscript{4} \subset  BESITZER\textsubscript{3}\\
 b\textsubscript{5} \subset  BESITZER\textsubscript{4}\\
@@ -214,7 +214,7 @@ Die Fragmente sind paarweise disjunkt, da sie sich gegenseitig ausschliessen.
 
 \section{Abgeleitete horizontale Fragmentierung (DHF)}
 \subsection{Relation Mitarbeiter}
-Wie im Datenbankentwurf ersichtlich kann ein Mitarbeiter nur in einer Filiale angestellt sein, deshalb wird die Relation Mitarbeiter gleich Fragmentiert wie die Relation Filiale. 
+Wie im Datenbankentwurf ersichtlich ist, kann ein Mitarbeiter nur in einer Filiale angestellt sein. Deshalb wird die Relation Mitarbeiter gleich fragmentiert wie die Relation Filiale. 
 
 MITARBEITER$_1$: (MITARBEITER) $\vartriangleright$ (FILIALE$_1$)\\
 MITARBEITER$_2$: (MITARBEITER) $\vartriangleright$ (FILIALE$_2$)\\
@@ -238,7 +238,7 @@ MIETOBJEKT$_3$: (MIETOBJEKT) $\vartriangleright$ (FILIALE$_3$)\\
 MIETOBJEKT$_4$: (MIETOBJEKT) $\vartriangleright$ (FILIALE$_4$)
 
 \subsection{Relation Besichtigung}
-Die Relation Besichtigung hat ebenfalls zwei Verbindungen (Kunde \& Mietobjekt). Ausserdem werden die Relationen Mietobjekt und Kunde gleich wie die Relation Filiale fragmentiert, somit wird auch die Relaion Besichtigung schlussendlich so fragmentiert. Deshalb ist es möglich die Fragmentierung von beiden Relationen abzuleiten. Da eine Besichtigung immer auf ein Mietobjekte bezogen ist, haben wir uns entschieden die Relation Besichtigung gleich wie die Relation Mietobjekt zu fragmentieren.
+Die Relation Besichtigung hat ebenfalls zwei Verbindungen (Kunde \& Mietobjekt). Ausserdem werden die Relationen Mietobjekt und Kunde gleich wie die Relation Filiale fragmentiert, somit wird auch die Relation Besichtigung schlussendlich so fragmentiert. Deshalb ist es möglich, die Fragmentierung von beiden Relationen abzuleiten. Da eine Besichtigung immer auf ein Mietobjekte bezogen ist, haben wir uns entschieden die Relation Besichtigung gleich wie die Relation Mietobjekt zu fragmentieren.
 
 BESICHTIGUNG$_1$: (BESICHTIGUNG) $\vartriangleright$ (MIETOBJEKT$_1$)\\
 BESICHTIGUNG$_2$: (BESICHTIGUNG) $\vartriangleright$ (MIETOBJEKT$_2$)\\
