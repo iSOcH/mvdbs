@@ -1,0 +1,3 @@
+CREATE MATERIALIZED VIEW mvdbs10.filialen
+REFRESH FAST WITH PRIMARY KEY FOR UPDATE
+AS SELECT * FROM mvdbs10.filialen@telesto.janus.fhnw.ch;

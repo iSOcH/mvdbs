@@ -1,0 +1,9 @@
+BEGIN
+DBMS_REPCAT.CREATE_MASTER_REPOBJECT (
+gname => 'mvdbs10_repg',
+type => 'TABLE',
+oname => 'filialen',
+sname => 'mvdbs10',
+use_existing_object => TRUE,
+Copy_rows => FALSE);
+END;

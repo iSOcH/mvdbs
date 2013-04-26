@@ -1,0 +1,6 @@
+BEGIN
+DBMS_REFRESH.ADD(
+name => 'mviewadmin.mvdbs10_refg',
+list => 'mvdbs10.filialen',
+lax => TRUE);
+END;

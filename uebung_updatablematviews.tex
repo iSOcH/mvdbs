@@ -8,10 +8,12 @@
 \usepackage{float}
 \usepackage{textcomp}
 \usepackage{geometry}
+\usepackage{listings}
+ \usepackage{german}
 \geometry{a4paper, left=30mm, right=25mm, top=30mm, bottom=35mm} 
 \usepackage{listings}
 \lstset{breaklines=true, breakatwhitespace=true, basicstyle=\scriptsize, numbers=left}
-\title{mvdbs: Übung Trigger}
+\title{mvdbs: Updatable Materialized View}
 \author{Tobias Lerch, Yanick Eberle, Pascal Schwarz}
 \begin{document}
 \maketitle
@@ -21,7 +23,48 @@
 
 
 \section{Replikation einrichten}
+Die Master Site und die Materialized View Site wurde bereits eingerichtet, somit müssen nur noch die jeweiligen Gruppen erstellt werden.
+\subsection{Erstellen der Master Group}
+Wir verbinden uns als Benutzer repadmin auf den Telesto Server und führen folgende SQL Statements aus.\\
 
+\lstinputlisting{SQLStatements/01_master_group.txt} 
+Das Resultat des SQL Developers ist ein einfaches  \glqq anonymer Block abgeschlossen\grqq. Somit ist die Master Gruppe erstellt.\\
+
+\lstinputlisting{SQLStatements/02_master_repobj.txt}
+Die Relation Filialen ist nun ein Replikationsobjekt  und wird der Master Gruppe hinzugefügt. \\
+
+\lstinputlisting{SQLStatements/03_rep_support.txt}
+Dieses Statement erstellt die Trigger und Packages, welche für die Replikation gebraucht werden.\\
+
+\lstinputlisting{SQLStatements/04_resume_master.txt}
+Die Änderungen werden in den Replikationsprozess aufgenommen.\\
+
+\subsection{Erstellen der Materialized View Group}
+Wir verbinden uns als Benutzer mvdbs10 auf den Telesto Server und führen folgende SQL Statements aus.\\
+
+\lstinputlisting{SQLStatements/05_matView.txt}
+Auf Telesto wurde nun die Materialized View erstellt und der mit \glqq materialized view LOG erstellt.\grqq bestätigt.\\
+
+\lstinputlisting{SQLStatements/06_DBLink.txt}
+Der Database Link wird als Benutzer mvdbs10 auf dem Server ganymed erstellt.\\
+
+\lstinputlisting{SQLStatements/07_mview_repgrp.txt}
+Dieses Statement erstellt eine neue Materialized View Group.\\
+
+\lstinputlisting{SQLStatements/08_refresh.txt}
+Es wird eine Refresh Gruppe erstellt, welche einen stündlichen refresh definiert.\\
+
+\lstinputlisting{SQLStatements/09_mview.txt}
+Als Benutzer mvdbs10 auf dem Server ganymed wird die Materialized View erstellt.\\
+
+\lstinputlisting{SQLStatements/10_mview_repobj.txt}
+Als Benutzer mviewadmin auf ganymed wird die Relation Filialen als Replikationsobjekt zu der Materialized View Group hinzugefügt.\\
+
+\lstinputlisting{SQLStatements/11_refresh.txt}
+Die Materialized View wird zur Refresh Grupppe hinzugefügt.\\
+
+\lstinputlisting{SQLStatements/12_demand_refresh.txt}
+Mit diesem Statement kann der Refresh direkt ausgeführt werden.\\
 
 
 \section{Testfälle}

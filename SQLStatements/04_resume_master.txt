@@ -1,0 +1,4 @@
+BEGIN
+DBMS_REPCAT.RESUME_MASTER_ACTIVITY (
+gname => 'mvdbs10_repg');
+END;

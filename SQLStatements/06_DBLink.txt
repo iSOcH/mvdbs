@@ -1,0 +1,2 @@
+CREATE DATABASE LINK telesto.janus.fhnw.ch
+CONNECT TO proxy_refresher IDENTIFIED BY &password;

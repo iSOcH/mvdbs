@@ -1,0 +1,4 @@
+BEGIN
+	DBMS_REPCAT.CREATE_MASTER_REPGROUP (
+	gname => 'mvdbs10_repg');
+END;

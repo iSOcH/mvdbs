@@ -1,0 +1,7 @@
+BEGIN
+DBMS_REPCAT.GENERATE_REPLICATION_SUPPORT (
+sname => 'mvdbs10',
+oname => 'filialen',
+type => 'TABLE',
+min_communication => TRUE);
+END;

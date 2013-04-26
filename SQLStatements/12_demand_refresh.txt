@@ -1,0 +1,4 @@
+BEGIN
+DBMS_REFRESH.REFRESH (
+name => 'mviewadmin.mvdbs10_refg' );
+end;

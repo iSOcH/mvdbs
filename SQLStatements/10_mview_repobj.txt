@@ -1,0 +1,8 @@
+BEGIN
+DBMS_REPCAT.CREATE_MVIEW_REPOBJECT (
+gname => 'mvdbs10_repg',
+sname => 'mvdbs10',
+oname => 'filialen',
+type => 'SNAPSHOT',
+min_communication => TRUE);
+END;

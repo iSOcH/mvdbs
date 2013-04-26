@@ -1,0 +1,1 @@
+CREATE MATERIALIZED VIEW LOG ON mvdbs10.filialen;

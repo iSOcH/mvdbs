@@ -1,0 +1,6 @@
+BEGIN
+DBMS_REPCAT.CREATE_MVIEW_REPGROUP (
+gname => 'mvdbsx2_repg',
+master => 'telesto.janus.fhnw.ch',
+propagation_mode => 'ASYNCHRONOUS');
+END;

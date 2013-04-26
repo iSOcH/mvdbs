@@ -1,0 +1,11 @@
+BEGIN
+DBMS_REFRESH.MAKE (
+name => 'mviewadmin.mvdbs10_refg',
+list => '',
+next_date => SYSDATE,
+interval => 'SYSDATE + 1/24',
+implicit_destroy => FALSE,
+rollback_seg => '',
+push_deferred_rpc => TRUE,
+refresh_after_errors => FALSE);
+END;
