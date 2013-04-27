@@ -19,10 +19,16 @@
 \maketitle
 
 \section{Einleitung}
-Ihre Lösung muss aus folgenden Teilen bestehen:
+Ihre Lösung muss aus folgenden Teilen bestehen:\\
+• Eine Beschreibung Ihrer Szenarios --> meinsch da esch guet so?
 
-• Eine Beschreibung Ihrer Szenarios
+In dieser Übung geht es darum, eine Replikation einzurichten und anschliessend die Auswirkungen und das Verhalten der Replikation genauer unter die Lupe zu nehmen.
 
+Wir erstellen auf dem Telesto Server eine Master Group und definieren die Relation Filialen als Replikationsobjekt, welche anschliessend der Master Group hinzugefügt wird. Um dieses anschliessend replizieren zu können, müssen noch Trigger und Packages erstellt werden und alles muss in den Replikationsprozess aufgenommen werden.
+
+Als Gegenstück zur Master Group auf Telesto erstellen wir auf auf dem Ganymed Server eine Materialized View Group, in welche ebenfalls die Relation Filiale als Replikationsobjekt aufgenommen wird. Anschliessend definieren eine Refresh Gruppe und fügen die Materialized View hinzu,  damit die Änderungen auch repliziert werden.
+
+Soblad alles eingerichtet ist, werden die Tests ausgeführt und analysiert.
 
 \section{Replikation einrichten}
 Die Master Site und die Materialized View Site wurde bereits eingerichtet, somit müssen nur noch die jeweiligen Gruppen erstellt werden.
@@ -71,6 +77,80 @@ Mit diesem Statement kann der Refresh direkt ausgeführt werden.\\
 \section{Testszenarien}
 \subsection{Ohne Konflikt}
 \subsubsection{updates}
+Um zu überprüfen, ob updates korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten verändern. Dabei sollte kein Konflikt auftreten.
+
+Folgendes Query wird auf der Master Site ausgeführt (ab Zeile 5 Output):
+\begin{lstlisting}
+UPDATE filialen
+SET ort='Brugg'
+WHERE ort='Basel' and fnr='F4'; 
+
+1 Zeilen aktualisiert.
+\end{lstlisting}
+
+Auf der Materialized View Site erstellen wir ebenfalls ein Query (ab Zeile 5 Output):
+\begin{lstlisting}
+UPDATE filialen
+SET ort='Brugg'
+WHERE ort='Basel' and fnr='F1'; 
+
+1 Zeilen aktualisiert.
+\end{lstlisting}
+
+Nun untersuchen wir die beiden Logs.
+
+Nach der Ausführung des Querys auf der Master Site sehen wir mit folgendem Befehl die Einträge im Log:
+\begin{lstlisting}
+SELECT * FROM MLOG$_FILIALEN ;
+\end{lstlisting}
+
+Im Log auf der Master Site ist ersichtlich, dass sich der Eintrag mit dem Primary Key FNR F4 geändert hat. Ebenfalls wurde eine CHANGE\_VECTOR und eine XID generiert, welche anschliessend für die Replikation verwendet wird.  Der Zeitstempel bei SNAPTIME ist noch mit dem Default Wert abgefüllt, da der Eintrag noch nicht auf die Materialized View Site repliziert wurde. Die Einträge 'U' unter DMLTYPE und OLD\_NEW zeigen, dass es sich bei der Änderung um ein Update handelt.
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$ CHANGE_VECTOR$$ XID$$
+--- ---------- --------- --------- --------------- ----------
+F4  01.01.00   U         U         04              1.7E+15 
+\end{lstlisting}
+
+Auch auf der Materialized View Site kann nach dem Ausführen des Querys das Log eingesehen werden:
+\begin{lstlisting}
+SELECT * FROM USLOG$_FILIALEN ;
+\end{lstlisting}
+
+Hier ist im Log ersichtlich, dass sich der Eintrag mit dem Primary Key FNR F1 geändert hat. Auf der Materialized View Site wird kein CHANGE\_VECTOR und XID generiert. Auch hier ist der Zeitstempel bei SNAPTIME noch der Default Wert.
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$
+--- ---------- --------- ---------
+F1  01.01.00   U         U         
+\end{lstlisting}
+
+Wir starten nun die Replikation manuell, da wir nicht eine Stunde warten möchten:
+\begin{lstlisting}
+BEGIN
+DBMS_REFRESH.REFRESH (
+name => 'mviewadmin.mvdbs10_refg' );
+end;
+\end{lstlisting}
+
+Nachdem die Replikation durchgeführt wurde, betrachten wir die Logs erneut.
+
+---------------------TO CHECK-------------------------\\
+Wir sehen, dass sich nun der Zeitstempel unter SNAPTIME verändert, was heisst, dass die Änderung repliziert wurde. Ebenfalls sehen wir, dass ein neuer Eintrag dazugekommen ist. Hierbei handelt es sich um die Änderung, welche wir auf der Materialized View Site durchgeführt haben.
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$ CHANGE_VECTOR$$ XID$$
+--- ---------- --------- --------- --------------- ----------
+F4  01.01.00   U         U         04              1.7E+15 
+\end{lstlisting}
+
+Dementsprechend hat sich auch das Log auf der Materialized View Site verändert. Der Eintrag unter SNAPTIME wurde angepasst, sowie ein neuer Eintrag mit den Änderungen von der Master Site wurde hinzugefügt.
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$
+--- ---------- --------- ---------
+F1  01.01.00   U         U         
+\end{lstlisting}
+---------------------TO CHECK-------------------------
+
+
+\subsubsection{deletes}
 Beschreibung:\\
 Master Site:\\
 	---SQL-Query:\\
@@ -78,8 +158,6 @@ Master Site:\\
 Materialized View Site:\\
 	---SQL-Query:\\
 	---Log:\\
-\subsubsection{deletes}
-
 \subsubsection{inserts}
 
 \subsection{Mit Konflikt}
