@@ -19,7 +19,9 @@
 \maketitle
 
 \section{Einleitung}
+Ihre Lösung muss aus folgenden Teilen bestehen:
 
+• Eine Beschreibung Ihrer Szenarios
 
 
 \section{Replikation einrichten}
@@ -43,7 +45,7 @@ Die Änderungen werden in den Replikationsprozess aufgenommen.\\
 Wir verbinden uns als Benutzer mvdbs10 auf den Telesto Server und führen folgende SQL Statements aus.\\
 
 \lstinputlisting{SQLStatements/05_matView.txt}
-Auf Telesto wurde nun die Materialized View erstellt und der mit \glqq materialized view LOG erstellt.\grqq bestätigt.\\
+Auf Telesto wurde nun die Materialized View erstellt und mit \glqq materialized view LOG erstellt.\grqq bestätigt.\\
 
 \lstinputlisting{SQLStatements/06_DBLink.txt}
 Der Database Link wird als Benutzer mvdbs10 auf dem Server ganymed erstellt.\\
@@ -66,40 +68,35 @@ Die Materialized View wird zur Refresh Grupppe hinzugefügt.\\
 \lstinputlisting{SQLStatements/12_demand_refresh.txt}
 Mit diesem Statement kann der Refresh direkt ausgeführt werden.\\
 
+\section{Testszenarien}
+\subsection{Ohne Konflikt}
+\subsubsection{updates}
+Beschreibung:\\
+Master Site:\\
+	---SQL-Query:\\
+	---Log:\\
+Materialized View Site:\\
+	---SQL-Query:\\
+	---Log:\\
+\subsubsection{deletes}
 
-\section{Testfälle}
-\begin{longtable}{p{2.5cm}|p{8cm}|l}
-	\textbf{address} & \textbf{name} & \textbf{os name}\\
-	\hline
-	\endfirsthead
-	\textbf{address} & \textbf{name} & \textbf{os name}\\
-	\hline
-	\endhead
-	\hline
-	\multicolumn{2}{l}{\textit{Fortführung auf nächster Seite\ldots}} \\
-	\endfoot
-	\endlastfoot
+\subsubsection{inserts}
 
-	blubb? &
-		\vspace{-18pt}
-		\begin{itemize}
-			\item erstes item
-			\item zweites item
-			\item drittes item
-		\end{itemize}
-		\vspace{-18pt} &
-	bla? \\ \hline
-	
-	blubb2? &
-		\vspace{-18pt}
-		\begin{itemize}
-			\item erstes item 2
-			\item zweites item 2
-			\item drittes item 2
-		\end{itemize}
-		\vspace{-18pt} &
-	bla2? \\ \hline
-\end{longtable}
+\subsection{Mit Konflikt}
+\subsubsection{updates}
+
+\subsubsection{deletes}
+
+\subsubsection{inserts}
+
+\subsection{Regel zur Konfliktauflösung}
+
+\subsection{Mit Konflikt und Konfliktauflösung}
+\subsubsection{updates}
+
+\subsubsection{deletes}
+
+\subsubsection{inserts}
 
 
 \end{document}
