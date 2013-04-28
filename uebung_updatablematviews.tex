@@ -57,7 +57,7 @@ Der Database Link wird als Benutzer mvdbs10 auf dem Server ganymed erstellt.\\
 Dieses Statement erstellt eine neue Materialized View Group.\\
 
 \lstinputlisting{SQLStatements/08_refresh.txt}
-Es wird eine Refresh Gruppe erstellt, welche einen stündlichen refresh definiert.\\
+Es wird eine Refresh Gruppe erstellt, welche einen stündlichen Refresh definiert.\\
 
 \lstinputlisting{SQLStatements/09_mview.txt}
 Als Benutzer mvdbs10 auf dem Server ganymed wird die Materialized View erstellt.\\
@@ -74,7 +74,7 @@ Mit diesem Statement kann der Refresh direkt ausgeführt werden.\\
 \section{Testszenarien}
 \subsection{Ohne Konflikt}
 \subsubsection{Updates}
-Um zu überprüfen, ob Updates korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten verändern. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
+Um zu überprüfen, ob Updates korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten verändern. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filialen auf beiden Sites identisch sein.
 
 Folgendes Query wird auf der Master Site ausgeführt (ab Zeile 5 Output):
 \begin{lstlisting}
@@ -140,7 +140,7 @@ Keine Zeilen gewaehlt
 \end{lstlisting}
 
 \subsubsection{Inserts}
-Um zu überprüfen, ob Inserts korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten einfügt. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
+Um zu überprüfen, ob Inserts korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten einfügt. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filialen auf beiden Sites identisch sein.
 
 Folgendes Query wird auf der Master Site ausgeführt (ab Zeile 3 Output):
 \begin{lstlisting}
@@ -195,7 +195,7 @@ Keine Zeilen gewaehlt
 \end{lstlisting}
 
 \subsubsection{Deletes}
-Um zu überprüfen, ob Deletes korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten löschen. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
+Um zu überprüfen, ob Deletes korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten löschen. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filialen auf beiden Sites identisch sein.
 
 Folgendes Query wird auf der Master Site ausgeführt (ab Zeile 5 Output):
 \begin{lstlisting}
@@ -473,7 +473,7 @@ BEGIN
       oname => 'filialen',
       column_group => 'dep_cg',
       sequence_no => 1,
-      method => 'DISCARD',
+      method => 'OVERWRITE',
       parameter_column_name => 'manager_id,location_id');
 END;
 \end{lstlisting}
@@ -627,5 +627,8 @@ DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERR
 ---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
 1.32.84171   GANYMED.SIRIUS.FHNW.CH  6.12.129681  0 TELESTO.JANUS.FHNW.CH   28.04.13 100 ORA-01403: Keine Daten gefunden  REPADMIN
 \end{lstlisting}
+\subsubsection{Ergebnis}
+Wird als Konfliktlösung die Methode Overwrite gewählt, werden bei UPDATE Statements mit Konflikten jeweils der Eintrag gespeichert der zuletzt ausgeführt wurde. Bei den INSERT und DELETE Statements erhalten wir jedoch immer noch einen Fehler. 
+
 
 \end{document}
