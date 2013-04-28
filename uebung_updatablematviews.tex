@@ -7,6 +7,7 @@
 \usepackage{longtable}
 \usepackage{float}
 \usepackage{textcomp}
+\usepackage{fancyhdr}
 \usepackage{geometry}
 \usepackage{listings}
  \usepackage{german}
@@ -18,6 +19,7 @@
 \begin{document}
 \maketitle
 
+\pagestyle{fancy}
 \section{Einleitung}
 In dieser Übung geht es darum, eine Replikation einzurichten und anschliessend die Auswirkungen und das Verhalten der Replikation genauer unter die Lupe zu nehmen.
 
@@ -66,7 +68,7 @@ Als Benutzer mvdbs10 auf dem Server ganymed wird die Materialized View erstellt.
 Als Benutzer mviewadmin auf ganymed wird die Relation Filialen als Replikationsobjekt zu der Materialized View Group hinzugefügt.\\
 
 \lstinputlisting{SQLStatements/11_refresh.txt}
-Die Materialized View wird zur Refresh Grupppe hinzugefügt.\\
+Die Materialized View wird zur Refresh Gruppe hinzugefügt.\\
 
 \lstinputlisting{SQLStatements/12_demand_refresh.txt}
 Mit diesem Statement kann der Refresh direkt ausgeführt werden.\\
@@ -598,7 +600,7 @@ Bei den Uniqueness Konfliktlösungen gibt es drei Möglichkeiten.
 	\item[APPEND SEQUENCE] Beim Primary Key wird eine generierte Sequenznummer hinzugefügt.  Vorraussetzung ist das der Typ der Spalte CHAR oder VARCHAR2 ist.
 	\item[DISCARD] Der Konflikt mit dem Constraint wird ignoriert und die Zeile nicht eingefügt. 
 \end{description}
-In unserem Fall bedeutet dies das der INSERT der Master Site eingetragen und repliziert wird. Wir erhalten keinen Replikationsfehler mehr, jedoch wird nur der erste Eintrag gespeichert und der zweite einfach ignoriert. Keine schöne, aber eine Konfliktfreie Lösung.
+In unserem Fall bedeutet dies das der INSERT der Master Site eingetragen und repliziert wird. Wir erhalten keinen Replikationsfehler mehr, jedoch wird nur der erste Eintrag gespeichert und der zweite einfach ignoriert. Keine schöne, aber eine konfliktfreie Lösung.
 \begin{lstlisting}
 FNR ORT        PLZ
 --- ---------- ----
@@ -670,7 +672,7 @@ DBMS_REPCAT.ADD_DELETE_RESOLUTION (
 \end{lstlisting}
 Quelle: \url{http://docs.oracle.com/cd/B28359_01/server.111/b28327/rarrcatpac.htm#i94790}
 \subsubsection{Ergebnis}
-Wird als Konfliktlösung die Methode Overwrite gewählt, werden bei UPDATE Statements mit Konflikten jeweils der Eintrag gespeichert der zuletzt ausgeführt wurde. Bei der INSERT Konfliktlösung muss einem bewusst werden was die Auswirkungen der Lösung auf die Primary Keys sind. Eine Delete Konfliktlösung ist zwar möglich, aber sie muss selbst implementiert werden was je nach komplexität einen grossen Aufwand bedeutet.
+Wird als Konfliktlösung die Methode Overwrite gewählt, werden bei UPDATE Statements mit Konflikten jeweils der Eintrag gespeichert der zuletzt ausgeführt wurde. Bei der INSERT Konfliktlösung muss einem bewusst werden was die Auswirkungen der Lösung auf die Primary Keys sind. Eine Delete Konfliktlösung ist zwar möglich, aber sie muss selbst implementiert werden, was je nach Komplexität einen grossen Aufwand bedeutet.
 
 
 \end{document}
