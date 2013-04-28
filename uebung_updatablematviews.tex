@@ -440,7 +440,7 @@ Hier geschiet also genau dasselbe, weil beide eine Zeile mit demselben Primary K
 \begin{lstlisting}
 DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERROR_NUMBER ERROR_MSG  RECEIVER
 ---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
-2.11.89518   GANYMED.SIRIUS.FHNW.CH  2.7.120248  0 TELESTO.JANUS.FHNW.CH   28.04.13 -1 ORA-00001: Unique Constraint (MVDBS10.FL_PK) verletzt  REPADMIN
+8.20.89509   GANYMED.SIRIUS.FHNW.CH  10.3.97163  0 TELESTO.JANUS.FHNW.CH   28.04.13 100 ORA-01403: Keine Daten gefunden  REPADMIN
 \end{lstlisting}
 
 Da wir später eine Regel zur Konfliktauflösung definieren, brechen wir hier ab. Wir haben gesehen, dass ein Konflikt auftritt.
@@ -505,17 +505,127 @@ Wir machen genau dasselbe wie oben mit Konflikt.
 
 Wenn wir nun die Replikation manuell starten, erhalten wir folgende Meldung:
 \begin{lstlisting}
+anonymer Block abgeschlossen
 \end{lstlisting}
+
+Es scheint als hat alles funktioniert. In der Tabelle DefError ist keine Meldung. Die Änderungen wurden übernommen. Da wir aber auf beiden Sites dasselbe Query ausgeführt haben, sehen wir nicht welche änderung übernommen wurde. Daher erstellen wir nun zwei unterschiedliche Querys, welche die gleiche Zeile anpassen, aber unterschiedliche Werte hineinschreiben:
+
+Master Site Query:
+\begin{lstlisting}
+UPDATE filialen
+SET ort='Brugg'
+WHERE fnr='F1'; 
+\end{lstlisting}
+
+Materialized View Site Query:
+\begin{lstlisting}
+UPDATE filialen
+SET ort='Biel'
+WHERE fnr='F1'; 
+\end{lstlisting}
+
+Wir führen zuerst das Query auf der Master Site aus und schliessen es ab mit 'commit'. Anaschliessend führen wir das Query auf der Materialized View Site aus und bestätigen dies ebenfalls mit 'commit'. Wenn wir die Tabelle filialen anschauen, sehen wir dass der Wert Biel übernommen wurde, was unsere Konfliktauflösung bestätigt, da wir Overwrite definiert haben. Also der letzte Commit überschreibt die vorhergehenden Änderungen.
+\begin{lstlisting}
+FNR ORT        PLZ
+--- ---------- ----
+F1  Biel       4056 
+F3  Bern       3014 
+F2  Zuerich     8050 
+F4  Basel      4002 
+\end{lstlisting}
+
+Die Logs der beiden Views sehen vor der Replikation genau gleich aus wie vorher, als wir die Konfliktauflösung noch nicht definiert haben.
+
 \subsubsection{inserts}
 Wir machen genau dasselbe wie oben mit Konflikt.
 
-Wenn wir nun die Replikation manuell starten, erhalten wir folgende Meldung:
+Auch hier erstellen wir wieder zwei unterschiedliche Querys, welche Werte mit demselben Primary Key einfügen:
+Master Site Query:
 \begin{lstlisting}
+INSERT INTO filialen (fnr, ort, plz) values ('F6', 'Grenchen', 9000);
 \end{lstlisting}
+
+Materialized View Site Query:
+\begin{lstlisting}
+INSERT INTO filialen (fnr, ort, plz) values ('F6', 'Genf', 9000);
+\end{lstlisting}
+
+Auch hier führen wir zuerst das Query auf der Master Site aus, schliessen es mit commit ab und machen anschliessend dasselbe auf der Materialized View Site.
+
+Bei der Replikation erhalten wir aber einen Fehler:
+\begin{lstlisting}
+Fehlerbericht:
+ORA-23402: Wegen Konflikten bei verzoegerten Transaktionen wurde die Aktualisierung abgebrochen
+ORA-06512: in "SYS.DBMS_SNAPSHOT", Zeile 2558
+ORA-06512: in "SYS.DBMS_SNAPSHOT", Zeile 2771
+ORA-06512: in "SYS.DBMS_IREFRESH", Zeile 685
+ORA-06512: in "SYS.DBMS_REFRESH", Zeile 195
+ORA-06512: in Zeile 2
+23402. 00000 -  "refresh was aborted because of conflicts caused by deferred txns"
+*Cause:    There are outstanding conflicts logged in the DefError table
+           at the materialized view's master.
+*Action:   Resolve the conflicts in the master DefError table and
+           refresh again after the table is empty.  Alternatively,
+           refresh with refresh_after_errors set to TRUE, which
+           will proceed with the refresh even if there are conflicts
+           in the master's DefError table.  Proceeding despite conflicts
+           can result with an updatable materialized view's changes appearing
+           to be temporarily lost (until a refresh succeeds after the
+           conflicts are resolved).
+\end{lstlisting}
+
+Wir schauen uns den Eintrag in der DefError Tabelle an und erkennen, dass es genau derselbe Fehler ist wie vor der Konfliktauflösung. Dies erklärt sich, da ein Unique Constraint gesetzt ist und ein Insert mit demselben Primary Key deshalb nicht möglich ist. Das Overwrite funktioniert hier also nicht, da der Constraint stärker gewichtet ist als das Overwrite der Replikation.
+\begin{lstlisting}
+DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERROR_NUMBER ERROR_MSG  RECEIVER
+---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
+2.11.89518   GANYMED.SIRIUS.FHNW.CH  2.7.120248  0 TELESTO.JANUS.FHNW.CH   28.04.13 -1 ORA-00001: Unique Constraint (MVDBS10.FL_PK) verletzt  REPADMIN
+\end{lstlisting}
+
 \subsubsection{deletes}
 Wir machen genau dasselbe wie oben mit Konflikt.
 
-Wenn wir nun die Replikation manuell starten, erhalten wir folgende Meldung:
+Auch hier erstellen wir wieder ein Querys, welches die Zeile mit demselben Primary Key löschen:
+Master Site Query:
 \begin{lstlisting}
+DELETE FROM filialen
+WHERE ort='Genf' and fnr='F6'; 
 \end{lstlisting}
+
+Materialized View Site Query:
+\begin{lstlisting}
+DELETE FROM filialen
+WHERE ort='Genf' and fnr='F6'; 
+\end{lstlisting}
+
+Auch hier führen wir zuerst das Query auf der Master Site aus, schliessen es mit commit ab und machen anschliessend dasselbe auf der Materialized View Site.
+
+Bei der Replikation erhalten wir aber einen Fehler:
+\begin{lstlisting}
+Fehlerbericht:
+ORA-23402: Wegen Konflikten bei verzoegerten Transaktionen wurde die Aktualisierung abgebrochen
+ORA-06512: in "SYS.DBMS_SNAPSHOT", Zeile 2558
+ORA-06512: in "SYS.DBMS_SNAPSHOT", Zeile 2771
+ORA-06512: in "SYS.DBMS_IREFRESH", Zeile 685
+ORA-06512: in "SYS.DBMS_REFRESH", Zeile 195
+ORA-06512: in Zeile 2
+23402. 00000 -  "refresh was aborted because of conflicts caused by deferred txns"
+*Cause:    There are outstanding conflicts logged in the DefError table
+           at the materialized view's master.
+*Action:   Resolve the conflicts in the master DefError table and
+           refresh again after the table is empty.  Alternatively,
+           refresh with refresh_after_errors set to TRUE, which
+           will proceed with the refresh even if there are conflicts
+           in the master's DefError table.  Proceeding despite conflicts
+           can result with an updatable materialized view's changes appearing
+           to be temporarily lost (until a refresh succeeds after the
+           conflicts are resolved).
+\end{lstlisting}
+
+Wir schauen uns den Eintrag in der DefError Tabelle an und erkennen, dass es genau derselbe Fehler ist wie vor der Konfliktauflösung. Dies erklärt sich, da nach dem Ausführen des ersten Querys die Zeile mit dem Primary Key F6 nicht mehr vorhanden ist und daher keine Daten gefunden wurden. Das Overwrite der Replikation kann nicht ausgeführt werden, da nicht gefunden wird.
+\begin{lstlisting}
+DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERROR_NUMBER ERROR_MSG  RECEIVER
+---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
+1.32.84171   GANYMED.SIRIUS.FHNW.CH  6.12.129681  0 TELESTO.JANUS.FHNW.CH   28.04.13 100 ORA-01403: Keine Daten gefunden  REPADMIN
+\end{lstlisting}
+
 \end{document}
