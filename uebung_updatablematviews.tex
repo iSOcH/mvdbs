@@ -12,7 +12,7 @@
  \usepackage{german}
 \geometry{a4paper, left=30mm, right=25mm, top=30mm, bottom=35mm} 
 \usepackage{listings}
-\lstset{breaklines=true, breakatwhitespace=true, basicstyle=\scriptsize, numbers=left}
+\lstset{breaklines=true, breakatwhitespace=true, basicstyle=\scriptsize, numbers=left, frame=single}
 \title{mvdbs: Updatable Materialized View}
 \author{Tobias Lerch, Yanick Eberle, Pascal Schwarz}
 \begin{document}
@@ -26,17 +26,17 @@ In dieser Übung geht es darum, eine Replikation einzurichten und anschliessend 
 
 Wir erstellen auf dem Telesto Server eine Master Group und definieren die Relation Filialen als Replikationsobjekt, welche anschliessend der Master Group hinzugefügt wird. Um dieses anschliessend replizieren zu können, müssen noch Trigger und Packages erstellt werden und alles muss in den Replikationsprozess aufgenommen werden.
 
-Als Gegenstück zur Master Group auf Telesto erstellen wir auf auf dem Ganymed Server eine Materialized View Group, in welche ebenfalls die Relation Filiale als Replikationsobjekt aufgenommen wird. Anschliessend definieren eine Refresh Gruppe und fügen die Materialized View hinzu,  damit die Änderungen auch repliziert werden.
+Als Gegenstück zur Master Group auf Telesto erstellen wir auf auf dem Ganymed Server eine Materialized View Group, in welche ebenfalls die Relation Filiale als Replikationsobjekt aufgenommen wird. Anschliessend definieren wir eine Refresh Gruppe und fügen die Materialized View hinzu, damit die Änderungen auch repliziert werden.
 
-Soblad alles eingerichtet ist, werden die Tests ausgeführt und analysiert.
+Sobald alles eingerichtet ist, werden die Tests ausgeführt und analysiert.
 
 \section{Replikation einrichten}
 Die Master Site und die Materialized View Site wurde bereits eingerichtet, somit müssen nur noch die jeweiligen Gruppen erstellt werden.
 \subsection{Erstellen der Master Group}
-Wir verbinden uns als Benutzer repadmin auf den Telesto Server und führen folgende SQL Statements aus.\\
+Wir verbinden uns als Benutzer repadmin auf den Telesto Server und führen folgende SQL Statements aus.
 
 \lstinputlisting{SQLStatements/01_master_group.txt} 
-Das Resultat des SQL Developers ist ein einfaches  \glqq anonymer Block abgeschlossen\grqq. Somit ist die Master Gruppe erstellt.\\
+Das Resultat im SQL Developer ist ein einfaches \glqq{}anonymer Block abgeschlossen\grqq{}. Somit ist die Master Gruppe erstellt.\\
 
 \lstinputlisting{SQLStatements/02_master_repobj.txt}
 Die Relation Filialen ist nun ein Replikationsobjekt  und wird der Master Gruppe hinzugefügt. \\
@@ -51,7 +51,7 @@ Die Änderungen werden in den Replikationsprozess aufgenommen.\\
 Wir verbinden uns als Benutzer mvdbs10 auf den Telesto Server und führen folgende SQL Statements aus.\\
 
 \lstinputlisting{SQLStatements/05_matView.txt}
-Auf Telesto wurde nun die Materialized View erstellt und mit \glqq materialized view LOG erstellt.\grqq bestätigt.\\
+Auf Telesto wurde nun die Materialized View erstellt und mit \glqq{}materialized view LOG erstellt\grqq{} bestätigt.\\
 
 \lstinputlisting{SQLStatements/06_DBLink.txt}
 Der Database Link wird als Benutzer mvdbs10 auf dem Server ganymed erstellt.\\
@@ -76,8 +76,8 @@ Mit diesem Statement kann der Refresh direkt ausgeführt werden.\\
 
 \section{Testszenarien}
 \subsection{Ohne Konflikt}
-\subsubsection{updates}
-Um zu überprüfen, ob updates korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten verändern. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
+\subsubsection{Updates}
+Um zu überprüfen, ob Updates korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten verändern. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
 
 Folgendes Query wird auf der Master Site ausgeführt (ab Zeile 5 Output):
 \begin{lstlisting}
@@ -101,10 +101,10 @@ Nun untersuchen wir die beiden Logs.
 
 Nach der Ausführung des Querys auf der Master Site sehen wir mit folgendem Befehl die Einträge im Log:
 \begin{lstlisting}
-SELECT * FROM MLOG$_FILIALEN ;
+SELECT * FROM MLOG$_FILIALEN;
 \end{lstlisting}
 
-Im Log auf der Master Site ist ersichtlich, dass sich der Eintrag mit dem Primary Key FNR F4 geändert hat. Ebenfalls wurde eine CHANGE\_VECTOR und eine XID generiert, welche anschliessend für die Replikation verwendet wird.  Der Zeitstempel bei SNAPTIME ist noch mit dem Default Wert abgefüllt. Es wird nur verwendet, wenn mehrere Snapshots auf einem Master definier sind. Da wir nur eine Materialized View haben, wird dieses Feld nicht verwendet. Der Eintrag 'U' unter DMLTYPE und  OLD\_NEW zeigt, dass es sich bei der Änderung um ein Update handelt.
+Im Log auf der Master Site ist ersichtlich, dass sich der Eintrag mit dem Primary Key FNR F4 geändert hat. Ebenfalls wurde eine CHANGE\_VECTOR und eine XID generiert, welche anschliessend für die Replikation verwendet wird.  Der Zeitstempel bei SNAPTIME ist noch mit dem Default Wert abgefüllt. Er wird nur verwendet, wenn mehrere Snapshots auf einem Master definiert sind. Da wir nur eine Materialized View haben, wird dieses Feld nicht verwendet. Der Eintrag 'U' unter DMLTYPE und  OLD\_NEW zeigt, dass es sich bei der Änderung um ein Update handelt.
 \begin{lstlisting}
 FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$ CHANGE_VECTOR$$ XID$$
 --- ---------- --------- --------- --------------- ----------
@@ -142,8 +142,8 @@ Das gleiche gilt für das Log auf der Materialized View Site.
 Keine Zeilen gewaehlt
 \end{lstlisting}
 
-\subsubsection{inserts}
-Um zu überprüfen, ob inserts korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten einfügt. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
+\subsubsection{Inserts}
+Um zu überprüfen, ob Inserts korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten einfügt. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
 
 Folgendes Query wird auf der Master Site ausgeführt (ab Zeile 3 Output):
 \begin{lstlisting}
@@ -163,10 +163,10 @@ Nun untersuchen wir die beiden Logs.
 
 Nach der Ausführung des Querys auf der Master Site sehen wir mit folgendem Befehl die Einträge im Log:
 \begin{lstlisting}
-SELECT * FROM MLOG$_FILIALEN ;
+SELECT * FROM MLOG$_FILIALEN;
 \end{lstlisting}
 
-Wir sehen dass der Eintrag mit dem Primary Key F5 geändert wurde. Das I bei DMLTYPE steht für insert. Der Wert N bei OLD\_NEW bedeutet, es ist ein neuer Wert dazugekommen. Wiederum wurde ein CHANGE\_VECTOR und eine XID generiert.
+Wir sehen, dass der Eintrag mit dem Primary Key F5 geändert wurde. Das I bei DMLTYPE steht für insert. Der Wert N bei OLD\_NEW bedeutet, es ist ein neuer Wert dazugekommen. Wiederum wurde ein CHANGE\_VECTOR und eine XID generiert.
 \begin{lstlisting}
 FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$ CHANGE_VECTOR$$ XID$$
 --- ---------- --------- --------- --------------- ----------
@@ -197,8 +197,8 @@ Wie bereits beim Update beschrieben ist nach der Replikation nichts mehr im Log.
 Keine Zeilen gewaehlt
 \end{lstlisting}
 
-\subsubsection{deletes}
-Um zu überprüfen, ob deletes korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten löschen. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
+\subsubsection{Deletes}
+Um zu überprüfen, ob Deletes korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten löschen. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
 
 Folgendes Query wird auf der Master Site ausgeführt (ab Zeile 5 Output):
 \begin{lstlisting}
@@ -221,7 +221,7 @@ Nach der Ausführung des Querys auf der Master Site sehen wir mit folgendem Befe
 SELECT * FROM MLOG$_FILIALEN ;
 \end{lstlisting}
 
-Wir sehen, dass der Eintrag mit dem Primary Key F5 geändert wurde. Das D bei DMLTYPE steht für delete. Der Wert O bei OLD\_NEW bedeutet, es wurde ein alter Wert gelöscht. Wiederum wurde ein CHANGE\_VECTOR und eine XID generiert.
+Wir sehen, dass der Eintrag mit dem Primary Key F5 geändert wurde. Das D bei DMLTYPE steht für delete. Der Wert O bei OLD\_NEW bedeutet, dass ein alter Wert gelöscht wurde. Wiederum wurde ein CHANGE\_VECTOR und eine XID generiert.
 \begin{lstlisting}
 FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$ CHANGE_VECTOR$$ XID$$
 --- ---------- --------- --------- --------------- ----------
@@ -253,8 +253,8 @@ Keine Zeilen gewaehlt
 \end{lstlisting}
 
 \subsection{Mit Konflikt}
-\subsubsection{updates}
-Um herauszufinden, wie sich die Replikation verhält wenn Konflikte auftreten, erstellen wir für beide Sites dasselbe SQL Query, welches dieselben Zeilen und dieselben Werte verändern. Bei der Replikation sollte ein Konflikt auftreten.
+\subsubsection{Updates}
+Um herauszufinden, wie sich die Replikation verhält wenn Konflikte auftreten, erstellen wir für beide Sites dasselbe SQL Query, welches die selben Zeilen und die selben Werte verändert. Bei der Replikation sollte ein Konflikt auftreten.
 
 SQL Query Master Site und Materialized View (ab Zeile 5 Output):
 \begin{lstlisting}
@@ -313,7 +313,7 @@ Wir schauen uns nun die Tabelle DefErrors genauer an:
 SELECT * FROM DefError
 \end{lstlisting}
 
-Wir können erkennen, dass ein Konflikt zwischen Ganymed und Telesto vorhanden ist, welcher am 28.04.2013 erzeugt wurde. Ebenfalls sieht man die Fehler Nummer und die Fehlermeldung. (leider ist die Darstellung nicht überschtlich, da die Zeile zu breit ist)
+Wir können erkennen, dass ein Konflikt zwischen Ganymed und Telesto vorhanden ist, welcher am 28.04.2013 erzeugt wurde. Ebenfalls sieht man die Fehlernummer und die Fehlermeldung (leider ist die Darstellung nicht überschtlich, da die Zeile zu breit ist).
 \begin{lstlisting}
 DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERROR_NUMBER ERROR_MSG  RECEIVER
 ---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
@@ -321,8 +321,9 @@ DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERR
 \end{lstlisting}
 
 Da wir später eine Regel zur Konfliktauflösung definieren, brechen wir hier ab. Wir haben gesehen, dass ein Konflikt auftritt.
-\subsubsection{inserts}
-Um herauszufinden, wie sich die Replikation verhält wenn Konflikte auftreten, erstellen wir für beide Sites dasselbe SQL Query, welches dieselben Zeilen und dieselben Werte einfügt. Bei der Replikation sollte ein Konflikt auftreten.
+
+\subsubsection{Inserts}
+Um herauszufinden, wie sich die Replikation verhält wenn Konflikte auftreten, erstellen wir für beide Sites dasselbe SQL Query, welches die selben Zeilen und die selben Werte einfügt. Bei der Replikation sollte ein Konflikt auftreten.
 
 SQL Query Master Site und Materialized View (ab Zeile 3 Output):
 \begin{lstlisting}
@@ -374,7 +375,7 @@ ORA-06512: in Zeile 2
            conflicts are resolved).
 \end{lstlisting}
 
-Hier geschiet also genau dasselbe, weil beide eine Zeile mit demselben Primary Key einfügen wollen. Auch hier betrachten wir den Eintrag in der DefError Tabelle. Es ist ersichtlich, dass der Konflikt auftritt, weil ein Constraint verletzt wurde.
+Hier geschieht also genau dasselbe, weil beide eine Zeile mit demselben Primary Key einfügen wollen. Auch hier betrachten wir den Eintrag in der DefError Tabelle. Es ist ersichtlich, dass der Konflikt auftritt, weil ein Constraint verletzt wurde.
 \begin{lstlisting}
 DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERROR_NUMBER ERROR_MSG  RECEIVER
 ---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
@@ -382,7 +383,7 @@ DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERR
 \end{lstlisting}
 
 Da wir später eine Regel zur Konfliktauflösung definieren, brechen wir hier ab. Wir haben gesehen, dass ein Konflikt auftritt.
-\subsubsection{deletes}
+\subsubsection{Deletes}
 Um herauszufinden, wie sich die Replikation verhält wenn Konflikte auftreten, erstellen wir für beide Sites dasselbe SQL Query, welches dieselbe Zeile und dieselben Werte löscht. Bei der Replikation sollte ein Konflikt auftreten.
 
 SQL Query Master Site und Materialized View (ab Zeile 4 Output):
@@ -436,7 +437,7 @@ ORA-06512: in Zeile 2
            conflicts are resolved).
 \end{lstlisting}
 
-Hier geschiet also genau dasselbe, weil beide eine Zeile mit demselben Primary Key löschen wollen. Auch hier betrachten wir den Eintrag in der DefError Tabelle. Es ist ersichtlich, dass der Konflikt auftritt, weil ein Constraint verletzt wurde.
+Hier geschieht also genau dasselbe, weil beide eine Zeile mit demselben Primary Key löschen wollen. Auch hier betrachten wir den Eintrag in der DefError Tabelle. Es ist ersichtlich, dass der Konflikt auftritt, weil ein Constraint verletzt wurde.
 \begin{lstlisting}
 DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERROR_NUMBER ERROR_MSG  RECEIVER
 ---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
@@ -446,7 +447,7 @@ DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERR
 Da wir später eine Regel zur Konfliktauflösung definieren, brechen wir hier ab. Wir haben gesehen, dass ein Konflikt auftritt.
 
 \subsection{Regel zur Konfliktauflösung}
-Wir verbinden uns mit dem repadmin auf den Telesto Server und führen folgende Skripts aus, um die Konfliktauflösung Overwrite zu aktivieren. Quelle: \url{http://docs.oracle.com/cd/B28359_01/server.111/b28327/rarconflictres.htm}
+Wir verbinden uns mit dem Benutzer repadmin auf den Server Telesto und führen folgende Skripts aus, um die Konfliktauflösung mittels \emph{Overwrite} zu aktivieren. Quelle: \url{http://docs.oracle.com/cd/B28359_01/server.111/b28327/rarconflictres.htm}
 
 Zuerst müssen wir die Replikationsgruppe inaktiv setzen, damit wir Änderungen vornehmen können an der Konfiguration.
 \begin{lstlisting}
@@ -456,7 +457,7 @@ BEGIN
 END;
 \end{lstlisting}
 
-Anschliessend müssen wir eine Column Group erstellen, da wir diese benötigen um das Overwrite zu aktivieren
+Anschliessend müssen wir eine Column Group erstellen, da wir diese benötigen um das Overwrite zu aktivieren:
 \begin{lstlisting}
 BEGIN
    DBMS_REPCAT.MAKE_COLUMN_GROUP (
@@ -500,7 +501,7 @@ END;
 \end{lstlisting}
 
 \subsection{Mit Konflikt und Konfliktauflösung}
-\subsubsection{updates}
+\subsubsection{Updates}
 Wir machen genau dasselbe wie oben mit Konflikt.
 
 Wenn wir nun die Replikation manuell starten, erhalten wir folgende Meldung:
@@ -508,7 +509,7 @@ Wenn wir nun die Replikation manuell starten, erhalten wir folgende Meldung:
 anonymer Block abgeschlossen
 \end{lstlisting}
 
-Es scheint als hat alles funktioniert. In der Tabelle DefError ist keine Meldung. Die Änderungen wurden übernommen. Da wir aber auf beiden Sites dasselbe Query ausgeführt haben, sehen wir nicht welche änderung übernommen wurde. Daher erstellen wir nun zwei unterschiedliche Querys, welche die gleiche Zeile anpassen, aber unterschiedliche Werte hineinschreiben:
+Es scheint als hat alles funktioniert. In der Tabelle DefError ist keine Meldung. Die Änderungen wurden übernommen. Da wir aber auf beiden Sites dasselbe Query ausgeführt haben, sehen wir nicht welche Änderung übernommen wurde. Daher erstellen wir nun zwei unterschiedliche Querys, welche die gleiche Zeile anpassen, aber unterschiedliche Werte hineinschreiben:
 
 Master Site Query:
 \begin{lstlisting}
@@ -524,7 +525,7 @@ SET ort='Biel'
 WHERE fnr='F1'; 
 \end{lstlisting}
 
-Wir führen zuerst das Query auf der Master Site aus und schliessen es ab mit 'commit'. Anaschliessend führen wir das Query auf der Materialized View Site aus und bestätigen dies ebenfalls mit 'commit'. Wenn wir die Tabelle filialen anschauen, sehen wir dass der Wert Biel übernommen wurde, was unsere Konfliktauflösung bestätigt, da wir Overwrite definiert haben. Also der letzte Commit überschreibt die vorhergehenden Änderungen.
+Wir führen zuerst das Query auf der Master Site aus und schliessen es ab mit 'commit'. Anschliessend führen wir das Query auf der Materialized View Site aus und bestätigen dies ebenfalls mit 'commit'. Wenn wir die Tabelle Filialen anschauen, sehen wir, dass der Wert Biel übernommen wurde. Dieses Resultat entspricht unserer Konfliktauflösung, da wir Overwrite definiert haben. Der letzte Commit überschreibt die vorhergehenden Änderungen.
 \begin{lstlisting}
 FNR ORT        PLZ
 --- ---------- ----
@@ -536,10 +537,11 @@ F4  Basel      4002
 
 Die Logs der beiden Views sehen vor der Replikation genau gleich aus wie vorher, als wir die Konfliktauflösung noch nicht definiert haben.
 
-\subsubsection{inserts}
+\subsubsection{Inserts}
 Wir machen genau dasselbe wie oben mit Konflikt.
 
-Auch hier erstellen wir wieder zwei unterschiedliche Querys, welche Werte mit demselben Primary Key einfügen:
+Auch hier erstellen wir wieder zwei unterschiedliche Querys, welche Werte mit dem selben Primary Key einfügen.
+
 Master Site Query:
 \begin{lstlisting}
 INSERT INTO filialen (fnr, ort, plz) values ('F6', 'Grenchen', 9000);
@@ -581,10 +583,11 @@ DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERR
 2.11.89518   GANYMED.SIRIUS.FHNW.CH  2.7.120248  0 TELESTO.JANUS.FHNW.CH   28.04.13 -1 ORA-00001: Unique Constraint (MVDBS10.FL_PK) verletzt  REPADMIN
 \end{lstlisting}
 
-\subsubsection{deletes}
+\subsubsection{Deletes}
 Wir machen genau dasselbe wie oben mit Konflikt.
 
-Auch hier erstellen wir wieder ein Querys, welches die Zeile mit demselben Primary Key löschen:
+Auch hier erstellen wir wieder Queries, welche die Zeile mit demselben Primary Key löschen.
+
 Master Site Query:
 \begin{lstlisting}
 DELETE FROM filialen
@@ -621,7 +624,7 @@ ORA-06512: in Zeile 2
            conflicts are resolved).
 \end{lstlisting}
 
-Wir schauen uns den Eintrag in der DefError Tabelle an und erkennen, dass es genau derselbe Fehler ist wie vor der Konfliktauflösung. Dies erklärt sich, da nach dem Ausführen des ersten Querys die Zeile mit dem Primary Key F6 nicht mehr vorhanden ist und daher keine Daten gefunden wurden. Das Overwrite der Replikation kann nicht ausgeführt werden, da nicht gefunden wird.
+Wir schauen uns den Eintrag in der DefError Tabelle an und erkennen, dass es genau der selbe Fehler ist wie vor der Konfliktauflösung. Dies erklärt sich, da nach dem Ausführen des ersten Querys die Zeile mit dem Primary Key F6 nicht mehr vorhanden ist und daher keine Daten gefunden wurden. Das Overwrite der Replikation kann nicht ausgeführt werden, da der Datensatz nicht gefunden wird.
 \begin{lstlisting}
 DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERROR_NUMBER ERROR_MSG  RECEIVER
 ---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
