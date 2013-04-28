@@ -254,18 +254,268 @@ Keine Zeilen gewaehlt
 
 \subsection{Mit Konflikt}
 \subsubsection{updates}
+Um herauszufinden, wie sich die Replikation verhält wenn Konflikte auftreten, erstellen wir für beide Sites dasselbe SQL Query, welches dieselben Zeilen und dieselben Werte verändern. Bei der Replikation sollte ein Konflikt auftreten.
 
+SQL Query Master Site und Materialized View (ab Zeile 5 Output):
+\begin{lstlisting}
+UPDATE filialen
+SET ort='Brugg'
+WHERE fnr='F1'; 
+
+1 Zeilen aktualisiert.
+\end{lstlisting}
+
+Nun steht in beiden Logs dasselbe.
+
+Die Zeile mit dem Primary Key F1 wurde geändert mit einem Update.
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$ CHANGE_VECTOR$$ XID$$
+--- ---------- --------- --------- --------------- ----------
+F1  01.01.00   U         U         04             3.1E+15 
+\end{lstlisting}
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$
+--- ---------- --------- ---------
+F1  01.01.00   U         U         
+\end{lstlisting}
+
+Wiederum geben wir die Änderungen für die Replikation frei:
+\begin{lstlisting}
+COMMIT
+
+festgeschrieben.
+\end{lstlisting}
+
+Wenn wir nun die Replikation manuell starten, erhalten wir folgende Meldung:
+\begin{lstlisting}
+Fehlerbericht:
+ORA-23402: Wegen Konflikten bei verzoegerten Transaktionen wurde die Aktualisierung abgebrochen
+ORA-06512: in "SYS.DBMS_SNAPSHOT", Zeile 2558
+ORA-06512: in "SYS.DBMS_SNAPSHOT", Zeile 2771
+ORA-06512: in "SYS.DBMS_IREFRESH", Zeile 685
+ORA-06512: in "SYS.DBMS_REFRESH", Zeile 195
+ORA-06512: in Zeile 2
+23402. 00000 -  "refresh was aborted because of conflicts caused by deferred txns"
+*Cause:    There are outstanding conflicts logged in the DefError table
+           at the materialized view's master.
+*Action:   Resolve the conflicts in the master DefError table and
+           refresh again after the table is empty.  Alternatively,
+           refresh with refresh_after_errors set to TRUE, which
+           will proceed with the refresh even if there are conflicts
+           in the master's DefError table.  Proceeding despite conflicts
+           can result with an updatable materialized view's changes appearing
+           to be temporarily lost (until a refresh succeeds after the
+           conflicts are resolved).
+\end{lstlisting}
+
+Wir schauen uns nun die Tabelle DefErrors genauer an:
+\begin{lstlisting}
+SELECT * FROM DefError
+\end{lstlisting}
+
+Wir können erkennen, dass ein Konflikt zwischen Ganymed und Telesto vorhanden ist, welcher am 28.04.2013 erzeugt wurde. Ebenfalls sieht man die Fehler Nummer und die Fehlermeldung. (leider ist die Darstellung nicht überschtlich, da die Zeile zu breit ist)
+\begin{lstlisting}
+DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERROR_NUMBER ERROR_MSG  RECEIVER
+---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
+8.4.89471   GANYMED.SIRIUS.FHNW.CH  7.31.97249  0 TELESTO.JANUS.FHNW.CH   28.04.13  100 ORA-01403: Keine Daten gefunden  REPADMIN
+\end{lstlisting}
+
+Da wir später eine Regel zur Konfliktauflösung definieren, brechen wir hier ab. Wir haben gesehen, dass ein Konflikt auftritt.
 \subsubsection{inserts}
+Um herauszufinden, wie sich die Replikation verhält wenn Konflikte auftreten, erstellen wir für beide Sites dasselbe SQL Query, welches dieselben Zeilen und dieselben Werte einfügt. Bei der Replikation sollte ein Konflikt auftreten.
 
+SQL Query Master Site und Materialized View (ab Zeile 3 Output):
+\begin{lstlisting}
+INSERT INTO filialen (fnr, ort, plz) values ('F6', 'Genf', 9000);
+
+1 Zeilen eingefuegt.
+\end{lstlisting}
+
+Nun steht in beiden Logs dasselbe.
+
+Die Zeile mit dem Primary Key F6 wurde geändert mit einem Insert und neuen Werten.
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$ CHANGE_VECTOR$$ XID$$
+--- ---------- --------- --------- --------------- ----------
+F6  01.01.00   I         N         FE             3.1E+15
+\end{lstlisting}
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$
+--- ---------- --------- ---------
+F6  01.01.00   I         N         
+\end{lstlisting}
+
+Wiederum geben wir die Änderungen für die Replikation frei:
+\begin{lstlisting}
+COMMIT
+
+festgeschrieben.
+\end{lstlisting}
+
+Wenn wir nun die Replikation manuell starten, erhalten wir folgende Meldung:
+\begin{lstlisting}
+Fehlerbericht:
+ORA-23402: Wegen Konflikten bei verzoegerten Transaktionen wurde die Aktualisierung abgebrochen
+ORA-06512: in "SYS.DBMS_SNAPSHOT", Zeile 2558
+ORA-06512: in "SYS.DBMS_SNAPSHOT", Zeile 2771
+ORA-06512: in "SYS.DBMS_IREFRESH", Zeile 685
+ORA-06512: in "SYS.DBMS_REFRESH", Zeile 195
+ORA-06512: in Zeile 2
+23402. 00000 -  "refresh was aborted because of conflicts caused by deferred txns"
+*Cause:    There are outstanding conflicts logged in the DefError table
+           at the materialized view's master.
+*Action:   Resolve the conflicts in the master DefError table and
+           refresh again after the table is empty.  Alternatively,
+           refresh with refresh_after_errors set to TRUE, which
+           will proceed with the refresh even if there are conflicts
+           in the master's DefError table.  Proceeding despite conflicts
+           can result with an updatable materialized view's changes appearing
+           to be temporarily lost (until a refresh succeeds after the
+           conflicts are resolved).
+\end{lstlisting}
+
+Hier geschiet also genau dasselbe, weil beide eine Zeile mit demselben Primary Key einfügen wollen. Auch hier betrachten wir den Eintrag in der DefError Tabelle. Es ist ersichtlich, dass der Konflikt auftritt, weil ein Constraint verletzt wurde.
+\begin{lstlisting}
+DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERROR_NUMBER ERROR_MSG  RECEIVER
+---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
+2.11.89518   GANYMED.SIRIUS.FHNW.CH  2.7.120248  0 TELESTO.JANUS.FHNW.CH   28.04.13 -1 ORA-00001: Unique Constraint (MVDBS10.FL_PK) verletzt  REPADMIN
+\end{lstlisting}
+
+Da wir später eine Regel zur Konfliktauflösung definieren, brechen wir hier ab. Wir haben gesehen, dass ein Konflikt auftritt.
 \subsubsection{deletes}
+Um herauszufinden, wie sich die Replikation verhält wenn Konflikte auftreten, erstellen wir für beide Sites dasselbe SQL Query, welches dieselbe Zeile und dieselben Werte löscht. Bei der Replikation sollte ein Konflikt auftreten.
+
+SQL Query Master Site und Materialized View (ab Zeile 4 Output):
+\begin{lstlisting}
+DELETE FROM filialen
+WHERE ort='Genf' and fnr='F6'; 
+
+1 Zeilen geloescht.
+\end{lstlisting}
+
+Nun steht in beiden Logs dasselbe.
+
+Die Zeile mit dem Primary Key F6 wurde geändert mit einem Insert und neuen Werten.
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$ CHANGE_VECTOR$$ XID$$
+--- ---------- --------- --------- --------------- ----------
+F6  01.01.00   D         O         00             3.1E+15 
+\end{lstlisting}
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$
+--- ---------- --------- ---------
+F6  01.01.00   D         O         
+\end{lstlisting}
+
+Wiederum geben wir die Änderungen für die Replikation frei:
+\begin{lstlisting}
+COMMIT
+
+festgeschrieben.
+\end{lstlisting}
+
+Wenn wir nun die Replikation manuell starten, erhalten wir folgende Meldung:
+\begin{lstlisting}
+Fehlerbericht:
+ORA-23402: Wegen Konflikten bei verzoegerten Transaktionen wurde die Aktualisierung abgebrochen
+ORA-06512: in "SYS.DBMS_SNAPSHOT", Zeile 2558
+ORA-06512: in "SYS.DBMS_SNAPSHOT", Zeile 2771
+ORA-06512: in "SYS.DBMS_IREFRESH", Zeile 685
+ORA-06512: in "SYS.DBMS_REFRESH", Zeile 195
+ORA-06512: in Zeile 2
+23402. 00000 -  "refresh was aborted because of conflicts caused by deferred txns"
+*Cause:    There are outstanding conflicts logged in the DefError table
+           at the materialized view's master.
+*Action:   Resolve the conflicts in the master DefError table and
+           refresh again after the table is empty.  Alternatively,
+           refresh with refresh_after_errors set to TRUE, which
+           will proceed with the refresh even if there are conflicts
+           in the master's DefError table.  Proceeding despite conflicts
+           can result with an updatable materialized view's changes appearing
+           to be temporarily lost (until a refresh succeeds after the
+           conflicts are resolved).
+\end{lstlisting}
+
+Hier geschiet also genau dasselbe, weil beide eine Zeile mit demselben Primary Key löschen wollen. Auch hier betrachten wir den Eintrag in der DefError Tabelle. Es ist ersichtlich, dass der Konflikt auftritt, weil ein Constraint verletzt wurde.
+\begin{lstlisting}
+DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERROR_NUMBER ERROR_MSG  RECEIVER
+---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
+2.11.89518   GANYMED.SIRIUS.FHNW.CH  2.7.120248  0 TELESTO.JANUS.FHNW.CH   28.04.13 -1 ORA-00001: Unique Constraint (MVDBS10.FL_PK) verletzt  REPADMIN
+\end{lstlisting}
+
+Da wir später eine Regel zur Konfliktauflösung definieren, brechen wir hier ab. Wir haben gesehen, dass ein Konflikt auftritt.
 
 \subsection{Regel zur Konfliktauflösung}
+Wir verbinden uns mit dem repadmin auf den Telesto Server und führen folgende Skripts aus, um die Konfliktauflösung Overwrite zu aktivieren. Quelle: \url{http://docs.oracle.com/cd/B28359_01/server.111/b28327/rarconflictres.htm}
+
+Zuerst müssen wir die Replikationsgruppe inaktiv setzen, damit wir Änderungen vornehmen können an der Konfiguration.
+\begin{lstlisting}
+BEGIN
+   DBMS_REPCAT.SUSPEND_MASTER_ACTIVITY (
+      gname => 'mvdbs10_repg');
+END;
+\end{lstlisting}
+
+Anschliessend müssen wir eine Column Group erstellen, da wir diese benötigen um das Overwrite zu aktivieren
+\begin{lstlisting}
+BEGIN
+   DBMS_REPCAT.MAKE_COLUMN_GROUP (
+      sname => 'mvdbs10',
+      oname => 'filialen',
+      column_group => 'dep_cg',
+      list_of_column_names => 'fnr');
+END;
+\end{lstlisting}
+
+Nun können wir die Konfliktauflösung definieren. Wir erstellen eine Overwrite Konfliktauflösung.
+\begin{lstlisting}
+BEGIN
+   DBMS_REPCAT.ADD_UPDATE_RESOLUTION (
+      sname => 'mvdbs10',
+      oname => 'filialen',
+      column_group => 'dep_cg',
+      sequence_no => 1,
+      method => 'DISCARD',
+      parameter_column_name => 'manager_id,location_id');
+END;
+\end{lstlisting}
+
+Nun müssen wir den Replikationssupport neu generieren.
+\begin{lstlisting}
+BEGIN 
+    DBMS_REPCAT.GENERATE_REPLICATION_SUPPORT (
+      sname => 'mvdbs10',
+      oname => 'filialen', 
+      type => 'TABLE',
+      min_communication => TRUE); 
+END;
+\end{lstlisting}
+
+Und zuletzt muss die Replikationsgruppe wieder aktiviert werden.
+\begin{lstlisting}
+BEGIN
+   DBMS_REPCAT.RESUME_MASTER_ACTIVITY (
+      gname => 'mvdbs10_repg');
+END;
+\end{lstlisting}
 
 \subsection{Mit Konflikt und Konfliktauflösung}
 \subsubsection{updates}
+Wir machen genau dasselbe wie oben mit Konflikt.
 
+Wenn wir nun die Replikation manuell starten, erhalten wir folgende Meldung:
+\begin{lstlisting}
+\end{lstlisting}
 \subsubsection{inserts}
+Wir machen genau dasselbe wie oben mit Konflikt.
 
+Wenn wir nun die Replikation manuell starten, erhalten wir folgende Meldung:
+\begin{lstlisting}
+\end{lstlisting}
 \subsubsection{deletes}
+Wir machen genau dasselbe wie oben mit Konflikt.
 
+Wenn wir nun die Replikation manuell starten, erhalten wir folgende Meldung:
+\begin{lstlisting}
+\end{lstlisting}
 \end{document}
