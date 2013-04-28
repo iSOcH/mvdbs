@@ -580,6 +580,35 @@ DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERR
 2.11.89518   GANYMED.SIRIUS.FHNW.CH  2.7.120248  0 TELESTO.JANUS.FHNW.CH   28.04.13 -1 ORA-00001: Unique Constraint (MVDBS10.FL_PK) verletzt  REPADMIN
 \end{lstlisting}
 
+Nun erstellen wir eine Regel für die Konfliktlösung von INSERT Konflikten.
+\begin{lstlisting}
+BEGIN
+   DBMS_REPCAT.ADD_UNIQUE_RESOLUTION (
+      sname => 'mvdbs10',
+      oname => 'filialen',
+      constraint_name => 'FL_PK',
+      sequence_no => 1,
+      method => 'DISCARD',
+      parameter_column_name => 'fnr');
+END;
+\end{lstlisting}
+Bei den Uniqueness Konfliktlösungen gibt es drei Möglichkeiten.
+\begin{description}
+	\item[APPEND SITE NAME] Beim Primary Key wird der Name der Site hinzugefügt. Vorraussetzung ist das der Typ der Spalte CHAR oder VARCHAR2 ist.
+	\item[APPEND SEQUENCE] Beim Primary Key wird eine generierte Sequenznummer hinzugefügt.  Vorraussetzung ist das der Typ der Spalte CHAR oder VARCHAR2 ist.
+	\item[DISCARD] Der Konflikt mit dem Constraint wird ignoriert und die Zeile nicht eingefügt. 
+\end{description}
+In unserem Fall bedeutet dies das der INSERT der Master Site eingetragen und repliziert wird. Wir erhalten keinen Replikationsfehler mehr, jedoch wird nur der erste Eintrag gespeichert und der zweite einfach ignoriert. Keine schöne, aber eine Konfliktfreie Lösung.
+\begin{lstlisting}
+FNR ORT        PLZ
+--- ---------- ----
+F6  Grenchen   9000 
+F1  Biel       4056 
+F3  Bern       3014 
+F2  Zurich     8050 
+F4  Basel      4002 
+\end{lstlisting}
+
 \subsubsection{Deletes}
 Wir machen genau dasselbe wie oben mit Konflikt.
 
