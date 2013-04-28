@@ -473,8 +473,8 @@ BEGIN
       oname => 'filialen',
       column_group => 'dep_cg',
       sequence_no => 1,
-      method => 'OVERWRITE',
-      parameter_column_name => 'manager_id,location_id');
+      method => 'DISCARD',
+      parameter_column_name => 'fnr');
 END;
 \end{lstlisting}
 
