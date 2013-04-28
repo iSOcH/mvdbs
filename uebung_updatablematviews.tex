@@ -77,7 +77,7 @@ Mit diesem Statement kann der Refresh direkt ausgeführt werden.\\
 \section{Testszenarien}
 \subsection{Ohne Konflikt}
 \subsubsection{updates}
-Um zu überprüfen, ob updates korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten verändern. Dabei sollte kein Konflikt auftreten.
+Um zu überprüfen, ob updates korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten verändern. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
 
 Folgendes Query wird auf der Master Site ausgeführt (ab Zeile 5 Output):
 \begin{lstlisting}
@@ -104,7 +104,7 @@ Nach der Ausführung des Querys auf der Master Site sehen wir mit folgendem Befe
 SELECT * FROM MLOG$_FILIALEN ;
 \end{lstlisting}
 
-Im Log auf der Master Site ist ersichtlich, dass sich der Eintrag mit dem Primary Key FNR F4 geändert hat. Ebenfalls wurde eine CHANGE\_VECTOR und eine XID generiert, welche anschliessend für die Replikation verwendet wird.  Der Zeitstempel bei SNAPTIME ist noch mit dem Default Wert abgefüllt, da der Eintrag noch nicht auf die Materialized View Site repliziert wurde. Die Einträge 'U' unter DMLTYPE und OLD\_NEW zeigen, dass es sich bei der Änderung um ein Update handelt.
+Im Log auf der Master Site ist ersichtlich, dass sich der Eintrag mit dem Primary Key FNR F4 geändert hat. Ebenfalls wurde eine CHANGE\_VECTOR und eine XID generiert, welche anschliessend für die Replikation verwendet wird.  Der Zeitstempel bei SNAPTIME ist noch mit dem Default Wert abgefüllt. Es wird nur verwendet, wenn mehrere Snapshots auf einem Master definier sind. Da wir nur eine Materialized View haben, wird dieses Feld nicht verwendet. Der Eintrag 'U' unter DMLTYPE und  OLD\_NEW zeigt, dass es sich bei der Änderung um ein Update handelt.
 \begin{lstlisting}
 FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$ CHANGE_VECTOR$$ XID$$
 --- ---------- --------- --------- --------------- ----------
@@ -116,65 +116,156 @@ Auch auf der Materialized View Site kann nach dem Ausführen des Querys das Log 
 SELECT * FROM USLOG$_FILIALEN ;
 \end{lstlisting}
 
-Hier ist im Log ersichtlich, dass sich der Eintrag mit dem Primary Key FNR F1 geändert hat. Auf der Materialized View Site wird kein CHANGE\_VECTOR und XID generiert. Auch hier ist der Zeitstempel bei SNAPTIME noch der Default Wert.
+Hier ist im Log ersichtlich, dass sich der Eintrag mit dem Primary Key FNR F1 geändert hat. Auf der Materialized View Site wird kein CHANGE\_VECTOR und XID generiert.
 \begin{lstlisting}
 FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$
 --- ---------- --------- ---------
 F1  01.01.00   U         U         
 \end{lstlisting}
 
-Wir starten nun die Replikation manuell, da wir nicht eine Stunde warten möchten:
+Wir geben die Änderungen für die Replikation frei, indem wir auf beiden Sites ein commit ausführen (ab Zeile 3 Output):
 \begin{lstlisting}
-BEGIN
-DBMS_REFRESH.REFRESH (
-name => 'mviewadmin.mvdbs10_refg' );
-end;
+COMMIT
+
+festgeschrieben.
 \end{lstlisting}
 
 Nachdem die Replikation durchgeführt wurde, betrachten wir die Logs erneut.
 
----------------------TO CHECK-------------------------\\
-Wir sehen, dass sich nun der Zeitstempel unter SNAPTIME verändert, was heisst, dass die Änderung repliziert wurde. Ebenfalls sehen wir, dass ein neuer Eintrag dazugekommen ist. Hierbei handelt es sich um die Änderung, welche wir auf der Materialized View Site durchgeführt haben.
+Der Eintrag im Log ist verschwunden. Das heisst, die Einträge bleiben nur gespeichert, bis die Replikation durchgeführt wurde. Jede Zeile im Log bedeutet, dass eine Zeile geändert wurde und repliziert werden muss. Bei der Replikation kann mithilfe des Logs die Änderung auf der Materialized View vorgenommen werden.
+\begin{lstlisting}
+Keine Zeilen gewaehlt
+\end{lstlisting}
+
+Das gleiche gilt für das Log auf der Materialized View Site.
+\begin{lstlisting}
+Keine Zeilen gewaehlt
+\end{lstlisting}
+
+\subsubsection{inserts}
+Um zu überprüfen, ob inserts korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten einfügt. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
+
+Folgendes Query wird auf der Master Site ausgeführt (ab Zeile 3 Output):
+\begin{lstlisting}
+INSERT INTO filialen (fnr, ort, plz) values ('F5', 'Genf', 9000);
+
+1 Zeilen eingefuegt.
+\end{lstlisting}
+
+Auf der Materialized View Site erstellen wir ebenfalls ein Query (ab Zeile 3 Output):
+\begin{lstlisting}
+INSERT INTO filialen (fnr, ort, plz) values ('F6', 'Genf', 9000);
+
+1 Zeilen eingefuegt.
+\end{lstlisting}
+
+Nun untersuchen wir die beiden Logs.
+
+Nach der Ausführung des Querys auf der Master Site sehen wir mit folgendem Befehl die Einträge im Log:
+\begin{lstlisting}
+SELECT * FROM MLOG$_FILIALEN ;
+\end{lstlisting}
+
+Wir sehen dass der Eintrag mit dem Primary Key F5 geändert wurde. Das I bei DMLTYPE steht für insert. Der Wert N bei OLD\_NEW bedeutet, es ist ein neuer Wert dazugekommen. Wiederum wurde ein CHANGE\_VECTOR und eine XID generiert.
 \begin{lstlisting}
 FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$ CHANGE_VECTOR$$ XID$$
 --- ---------- --------- --------- --------------- ----------
-F4  01.01.00   U         U         04              1.7E+15 
+F5  01.01.00   I         N         FE              2.5E+15 
 \end{lstlisting}
 
-Dementsprechend hat sich auch das Log auf der Materialized View Site verändert. Der Eintrag unter SNAPTIME wurde angepasst, sowie ein neuer Eintrag mit den Änderungen von der Master Site wurde hinzugefügt.
+Auch auf der Materialized View Site kann nach dem Ausführen des Querys das Log eingesehen werden:
+\begin{lstlisting}
+SELECT * FROM USLOG$_FILIALEN ;
+\end{lstlisting}
+
+Hier ist im Log ersichtlich, dass sich der Eintrag mit dem Primary Key FNR F6 geändert hat. Es handelt sich ebenfalls um ein Insert.
 \begin{lstlisting}
 FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$
 --- ---------- --------- ---------
-F1  01.01.00   U         U         
+F6  01.01.00   I         N         
 \end{lstlisting}
----------------------TO CHECK-------------------------
 
+Wir geben die Änderungen für die Replikation frei, indem wir auf beiden Sites ein commit ausführen (ab Zeile 3 Output):
+\begin{lstlisting}
+COMMIT
+
+festgeschrieben.
+\end{lstlisting}
+
+Wie bereits beim Update beschrieben ist nach der Replikation nichts mehr im Log.
+\begin{lstlisting}
+Keine Zeilen gewaehlt
+\end{lstlisting}
 
 \subsubsection{deletes}
-Beschreibung:\\
-Master Site:\\
-	---SQL-Query:\\
-	---Log:\\
-Materialized View Site:\\
-	---SQL-Query:\\
-	---Log:\\
-\subsubsection{inserts}
+Um zu überprüfen, ob deletes korrekt repliziert werden, erstellen wir ein Query für die Master Site und ein zweites Query für die Materialized View Site, wobei diese unterschiedliche Daten löschen. Dabei sollte kein Konflikt auftreten. Nach der Replikation sollte die Tabelle Filiale auf beiden Sites identisch sein.
+
+Folgendes Query wird auf der Master Site ausgeführt (ab Zeile 5 Output):
+\begin{lstlisting}
+DELETE FROM filialen
+WHERE ort='Genf' and fnr='F5'; 
+
+\end{lstlisting}
+
+Auf der Materialized View Site erstellen wir ebenfalls ein Query (ab Zeile 5 Output):
+\begin{lstlisting}
+DELETE FROM filialen
+WHERE ort='Genf' and fnr='F6'; 
+
+\end{lstlisting}
+
+Nun untersuchen wir die beiden Logs.
+
+Nach der Ausführung des Querys auf der Master Site sehen wir mit folgendem Befehl die Einträge im Log:
+\begin{lstlisting}
+SELECT * FROM MLOG$_FILIALEN ;
+\end{lstlisting}
+
+Wir sehen, dass der Eintrag mit dem Primary Key F5 geändert wurde. Das D bei DMLTYPE steht für delete. Der Wert O bei OLD\_NEW bedeutet, es wurde ein alter Wert gelöscht. Wiederum wurde ein CHANGE\_VECTOR und eine XID generiert.
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$ CHANGE_VECTOR$$ XID$$
+--- ---------- --------- --------- --------------- ----------
+F5  01.01.00   D         O         00             2.0E+15 
+\end{lstlisting}
+
+Auch auf der Materialized View Site kann nach dem Ausführen des Querys das Log eingesehen werden:
+\begin{lstlisting}
+SELECT * FROM USLOG$_FILIALEN ;
+\end{lstlisting}
+
+Hier ist im Log ersichtlich, dass sich der Eintrag mit dem Primary Key FNR F6 geändert hat. Es handelt sich ebenfalls um ein Delete.
+\begin{lstlisting}
+FNR SNAPTIME$$ DMLTYPE$$ OLD_NEW$$
+--- ---------- --------- ---------
+F6  01.01.00   D         O         
+\end{lstlisting}
+
+Wir geben die Änderungen für die Replikation frei, indem wir auf beiden Sites ein commit ausführen (ab Zeile 3 Output):
+\begin{lstlisting}
+COMMIT
+
+festgeschrieben.
+\end{lstlisting}
+
+Wie bereits beim Update beschrieben ist nach der Replikation nichts mehr im Log.
+\begin{lstlisting}
+Keine Zeilen gewaehlt
+\end{lstlisting}
 
 \subsection{Mit Konflikt}
 \subsubsection{updates}
 
-\subsubsection{deletes}
-
 \subsubsection{inserts}
+
+\subsubsection{deletes}
 
 \subsection{Regel zur Konfliktauflösung}
 
 \subsection{Mit Konflikt und Konfliktauflösung}
 \subsubsection{updates}
 
-\subsubsection{deletes}
-
 \subsubsection{inserts}
 
+\subsubsection{deletes}
 
 \end{document}
