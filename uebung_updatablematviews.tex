@@ -473,7 +473,7 @@ BEGIN
       oname => 'filialen',
       column_group => 'dep_cg',
       sequence_no => 1,
-      method => 'DISCARD',
+      method => 'OVERWRITE',
       parameter_column_name => 'fnr');
 END;
 \end{lstlisting}
@@ -617,13 +617,13 @@ Auch hier erstellen wir wieder Queries, welche die Zeile mit demselben Primary K
 Master Site Query:
 \begin{lstlisting}
 DELETE FROM filialen
-WHERE ort='Genf' and fnr='F6'; 
+WHERE ort='Grenchen' and fnr='F6'; 
 \end{lstlisting}
 
 Materialized View Site Query:
 \begin{lstlisting}
 DELETE FROM filialen
-WHERE ort='Genf' and fnr='F6'; 
+WHERE ort='Grenchen' and fnr='F6'; 
 \end{lstlisting}
 
 Auch hier führen wir zuerst das Query auf der Master Site aus, schliessen es mit commit ab und machen anschliessend dasselbe auf der Materialized View Site.
@@ -656,8 +656,21 @@ DEFERRED_TRAN_ID ORIGIN_TRAN_DB ORIGIN_TRAN_ID CALLNO DESTINATION START_TIME ERR
 ---------------- -------------- ------------ ------- ------------ -------------- ----------- ----------- ----------
 1.32.84171   GANYMED.SIRIUS.FHNW.CH  6.12.129681  0 TELESTO.JANUS.FHNW.CH   28.04.13 100 ORA-01403: Keine Daten gefunden  REPADMIN
 \end{lstlisting}
+Oracle bietet auch für DELETE Konflikte ein Prozedur an. Es gibt aber von Oracle keine Delete Methoden. Das bedeutet die Methode muss vom DB Administrator selbst geschrieben werden. Das hinzufügen einer Delete Konfliktlösung ist gleich wie bei Update und Insert.
+
+\begin{lstlisting}
+DBMS_REPCAT.ADD_DELETE_RESOLUTION (
+   sname                  IN   VARCHAR2, 
+   oname                  IN   VARCHAR2, 
+   sequence_no            IN   NUMBER,
+   parameter_column_name  IN   VARCHAR2 | DBMS_REPCAT.VARCHAR2s, 
+   function_name          IN   VARCHAR2,
+   comment                IN   VARCHAR2     := NULL
+   method                 IN   VARCHAR2     := 'USER FUNCTION');
+\end{lstlisting}
+Quelle: \url{http://docs.oracle.com/cd/B28359_01/server.111/b28327/rarrcatpac.htm#i94790}
 \subsubsection{Ergebnis}
-Wird als Konfliktlösung die Methode Overwrite gewählt, werden bei UPDATE Statements mit Konflikten jeweils der Eintrag gespeichert der zuletzt ausgeführt wurde. Bei den INSERT und DELETE Statements erhalten wir jedoch immer noch einen Fehler. 
+Wird als Konfliktlösung die Methode Overwrite gewählt, werden bei UPDATE Statements mit Konflikten jeweils der Eintrag gespeichert der zuletzt ausgeführt wurde. Bei der INSERT Konfliktlösung muss einem bewusst werden was die Auswirkungen der Lösung auf die Primary Keys sind. Eine Delete Konfliktlösung ist zwar möglich, aber sie muss selbst implementiert werden was je nach komplexität einen grossen Aufwand bedeutet.
 
 
 \end{document}
