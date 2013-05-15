@@ -1,0 +1,66 @@
+[iso@iso-t530arch hadoop-0.22.0]$ bin/hadoop jar groupcount.jar InGCount OutGCount
+13/05/15 15:18:21 INFO jvm.JvmMetrics: Initializing JVM Metrics with processName=JobTracker, sessionId=
+13/05/15 15:18:21 INFO util.NativeCodeLoader: Loaded the native-hadoop library
+13/05/15 15:18:21 WARN conf.Configuration: mapred.used.genericoptionsparser is deprecated. Instead, use mapreduce.client.genericoptionsparser.used
+13/05/15 15:18:21 WARN mapreduce.JobSubmitter: No job jar file set.  User classes may not be found. See Job or Job#setJar(String).
+13/05/15 15:18:21 INFO input.FileInputFormat: Total input paths to process : 1
+13/05/15 15:18:21 INFO mapreduce.JobSubmitter: number of splits:1
+13/05/15 15:18:21 INFO mapreduce.Job: Running job: job_local_0001
+13/05/15 15:18:21 INFO mapred.LocalJobRunner: Waiting for map tasks
+13/05/15 15:18:21 INFO mapred.LocalJobRunner: Starting task: attempt_local_0001_m_000000_0
+13/05/15 15:18:21 INFO util.ProcessTree: setsid exited with exit code 0
+13/05/15 15:18:21 INFO mapred.Task:  Using ResourceCalculatorPlugin : org.apache.hadoop.mapreduce.util.LinuxResourceCalculatorPlugin@68c0e5e1
+13/05/15 15:18:21 INFO mapred.MapTask: (EQUATOR) 0 kvi 26214396(104857584)
+13/05/15 15:18:21 INFO mapred.MapTask: mapreduce.task.io.sort.mb: 100
+13/05/15 15:18:21 INFO mapred.MapTask: soft limit at 83886080
+13/05/15 15:18:21 INFO mapred.MapTask: bufstart = 0; bufvoid = 104857600
+13/05/15 15:18:21 INFO mapred.MapTask: kvstart = 26214396; length = 6553600
+13/05/15 15:18:21 INFO mapred.LocalJobRunner: 
+13/05/15 15:18:21 INFO mapred.MapTask: Starting flush of map output
+13/05/15 15:18:21 INFO mapred.MapTask: Spilling map output
+13/05/15 15:18:21 INFO mapred.MapTask: bufstart = 0; bufend = 117; bufvoid = 104857600
+13/05/15 15:18:21 INFO mapred.MapTask: kvstart = 26214396(104857584); kvend = 26214364(104857456); length = 33/6553600
+13/05/15 15:18:21 INFO mapred.MapTask: Finished spill 0
+13/05/15 15:18:21 INFO mapred.Task: Task:attempt_local_0001_m_000000_0 is done. And is in the process of commiting
+13/05/15 15:18:21 INFO mapred.LocalJobRunner: map > sort
+13/05/15 15:18:21 INFO mapred.Task: Task 'attempt_local_0001_m_000000_0' done.
+13/05/15 15:18:21 INFO mapred.LocalJobRunner: Finishing task: attempt_local_0001_m_000000_0
+13/05/15 15:18:21 INFO mapred.LocalJobRunner: Map task executor complete.
+13/05/15 15:18:21 INFO mapred.Task:  Using ResourceCalculatorPlugin : org.apache.hadoop.mapreduce.util.LinuxResourceCalculatorPlugin@2467149d
+13/05/15 15:18:21 INFO mapred.Merger: Merging 1 sorted segments
+13/05/15 15:18:21 INFO mapred.Merger: Down to the last merge-pass, with 1 segments left of total size: 130 bytes
+13/05/15 15:18:21 INFO mapred.LocalJobRunner: 
+13/05/15 15:18:21 WARN conf.Configuration: mapred.skip.on is deprecated. Instead, use mapreduce.job.skiprecords
+13/05/15 15:18:21 INFO mapred.Task: Task:attempt_local_0001_r_000000_0 is done. And is in the process of commiting
+13/05/15 15:18:21 INFO mapred.LocalJobRunner: 
+13/05/15 15:18:21 INFO mapred.Task: Task attempt_local_0001_r_000000_0 is allowed to commit now
+13/05/15 15:18:21 INFO output.FileOutputCommitter: Saved output of task 'attempt_local_0001_r_000000_0' to OutGCount
+13/05/15 15:18:21 INFO mapred.LocalJobRunner: reduce > sort
+13/05/15 15:18:21 INFO mapred.Task: Task 'attempt_local_0001_r_000000_0' done.
+13/05/15 15:18:22 INFO mapreduce.Job:  map 100% reduce 100%
+13/05/15 15:18:22 INFO mapreduce.Job: Job complete: job_local_0001
+13/05/15 15:18:22 INFO mapreduce.Job: Counters: 21
+	FileInputFormatCounters
+		BYTES_READ=207
+	FileSystemCounters
+		FILE_BYTES_READ=951
+		FILE_BYTES_WRITTEN=134336
+	Map-Reduce Framework
+		Combine input records=0
+		Combine output records=0
+		CPU_MILLISECONDS=0
+		Failed Shuffles=0
+		GC time elapsed (ms)=0
+		Map input records=9
+		Map output bytes=117
+		Map output records=9
+		Merged Map outputs=0
+		PHYSICAL_MEMORY_BYTES=0
+		Reduce input groups=6
+		Reduce input records=9
+		Reduce output records=6
+		Reduce shuffle bytes=0
+		Shuffled Maps =0
+		Spilled Records=18
+		SPLIT_RAW_BYTES=143
+		VIRTUAL_MEMORY_BYTES=0

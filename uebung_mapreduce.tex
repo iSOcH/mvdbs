@@ -1,0 +1,93 @@
+\documentclass[11pt,a4paper,parskip=half]{scrartcl}
+\usepackage{ngerman}
+\usepackage[utf8]{inputenc}
+\usepackage[colorlinks=false,pdfborder={0 0 0}]{hyperref}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{textcomp}
+\usepackage{fancyhdr}
+\usepackage{geometry}
+\usepackage{listings}
+ \usepackage{german}
+\geometry{a4paper, left=30mm, right=25mm, top=30mm, bottom=35mm} 
+\usepackage{listings}
+\lstset{breaklines=true, breakatwhitespace=true, basicstyle=\scriptsize, numbers=left, frame=single}
+\title{mvdbs: Relationale Operationen mit Map Reduce}
+\author{Tobias Lerch, Yanick Eberle, Pascal Schwarz}
+\begin{document}
+\maketitle
+
+\pagestyle{fancy}
+\section{Einleitung}
+In dieser Aufgabe geht es darum, einfache relationale Operationen mittels Map Reduce umzusetzen. Die Daten, auf welchen die Abfragen ausgeführt werden sollen, liegen dabei in CSV-Form vor.
+
+Es sind Daten aus den Tabellen \emph{mitglieder} und \emph{registrierungen} abzufragen. Die CSV-Dateien werden hier der Übersichtlichkeit wegen gelistet.
+
+Inhalt von \emph{Registrierungen}:
+\lstinputlisting{nosqlfiles/registrierungen.csv}
+
+Inhalt von \emph{Mitglieder}:
+\lstinputlisting{nosqlfiles/mitglieder.csv}
+
+\section{Group By mit Count}
+Diese Operation soll mittels Map Reduce umgesetzt werden:
+\lstinputlisting{nosqlfiles/groupcount.sql}
+
+Die Lösung dieser Aufgabe haben wir sehr ähnlich umgesetzt wie die Aufgabe, bei der es darum ging, die Anzahl Vorkommnisse eines Wortes in den Eingabedaten zu zählen. Im Wesentlichen übernehmen die Komponenten die folgenden Aufgaben:
+
+\begin{description}
+	\item[mapper] Spalte \emph{mnr} aus jeder Zeile extrahieren und diese als Key weitergeben (die Value spielt keine Rolle).
+	\item[reducer] Die Anzahl Values pro Key (pro Wert in \emph{mnr} wird einmal ein reducer mit diesem Wert als Key aufgerufen) zählen und diese Anzahl zusammen mit dem Key ausgeben.
+\end{description}
+
+Die Aufgabe haben wir dann mit dem folgenden Code gelöst:
+\lstinputlisting{nosqlfiles/GroupCount.java}
+
+Nach dem Platzieren der Datei \emph{registrierungen.csv} in den Ordner \emph{InGCount} und dem Exportieren des Codes in eine JAR-Datei können wir mit dem folgenden Aufruf die Abfrage ausführen:
+\lstinputlisting{nosqlfiles/hadoopgcountaufruf.txt}
+
+Die Anzeige des Output-Files zeigt das Resultat der Abfrage:
+\begin{lstlisting}
+[iso@iso-t530arch hadoop-0.22.0]$ cat OutGCount/part-r-00000 
+M001	2
+M002	1
+M003	1
+M004	2
+M005	2
+M006	1
+\end{lstlisting}
+
+Dieses Resultat deckt sich nicht nur mit dem erwarteten Resultat der SQL-Abfrage, sondern auch mit dem Statusoutput am Ende der Hadoop-Ausführung. Insgesamt sind 9 Datensätze in \emph{registrierungen.csv} enthalten (\emph{Map input records}, \emph{Map Output records} und \emph{Reduce input records}) und das Resultat der Abfrage enthält noch 6 Einträge, da es 6 verschiedene Werte in der Spalte \emph{mnr} gibt (\emph{Reduce input groups} und \emph{Reduce output records}).
+
+
+\section{Join}
+In dieser Aufgabe soll die folgende Operation mittels Map Reduce umgesetzt werden:
+\lstinputlisting{nosqlfiles/join.sql}
+
+Um den Join umzusetzen sehen wir die folgende Aufgabenteilung zwischen Mapper und Reducer vor:
+\begin{description}
+	\item[mapper]	Extrahiert den Join-Key (\emph{mnr}) aus den Zeilen und geben diesen als Key weiter. Als Value wird der restliche Inhalt der Zeile zusammen mit einem Hinweis weitergegeben. Der Hinweis sagt aus, aus welcher Tabelle der Datensatz stammt.
+	\item[reducer]	Setzt die Zeilen des Resultats des Joins zusammen. Dabei muss für jeden Wert des Join-Keys jede Zeile aus \emph{mitglieder} mit jeder Zeile aus \emph{registrierungen} kombiniert werden. Dass \emph{mnr} ein Primary-Key von \emph{mitglieder} ist, und daher aus \emph{mitglieder} nur eine einzige Zeile pro \emph{mnr} geliefert wird, ignorieren wir.
+\end{description}
+
+Die Lösung der Aufgabe in Java folgt. Für die beiden Input-Tabellen wurden separate Mapper-Klassen erstellt. Diese wurden mittels \emph{MultipleInputs} dem Job hinzugefügt. .......
+
+\lstinputlisting{nosqlfiles/Join.java}
+
+Output:
+\begin{lstlisting}
+[iso@iso-t530arch hadoop-0.22.0]$ cat OutJoin/part-r-00000 
+M001	A. Huber	Basel		15.05.1978	F2	A04	12.10.2007
+M001	A. Huber	Basel		15.05.1978	F1	A01	07.11.2007
+M002	E. Mueller	Bern		30.07.1985	F3	A02	17.05.2007
+M003	K. Buser	Riehen		13.04.1972	F1	A03	07.11.2007
+M004	S. Baumann	Bern		21.03.1982	F3	A01	29.06.2007
+M004	S. Baumann	Bern		21.03.1982	F1	A01	29.06.2007
+M005	U. Schoch	Basel		01.09.1975	F3	A02	01.12.2007
+M005	U. Schoch	Basel		01.09.1975	F1	A01	04.07.2007
+M006	E. Mueller	Reinach BL	28.10.1980	F4	A05	16.05.2007
+\end{lstlisting}
+
+\end{document}
