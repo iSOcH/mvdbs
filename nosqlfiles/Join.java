@@ -50,7 +50,7 @@ public class Join {
 			Text mnr = new Text(fields[0]);
 			String record = fields[1] + "\t" + fields[2] + "\t" + fields[3];
 			
-			context.write(new Text(mnr), new MapPair(tableM, record));
+			context.write(mnr, new MapPair(tableM, record));
 		}
 	}
 	
@@ -64,7 +64,7 @@ public class Join {
 			Text mnr = new Text(fields[0]);
 			String record = fields[1] + "\t" + fields[2] + "\t" + fields[3];
 			
-			context.write(new Text(mnr), new MapPair(tableR, record));
+			context.write(mnr, new MapPair(tableR, record));
 		}
 	}
 	

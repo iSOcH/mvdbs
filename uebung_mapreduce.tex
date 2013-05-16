@@ -31,6 +31,7 @@ Inhalt von \emph{Registrierungen}:
 Inhalt von \emph{Mitglieder}:
 \lstinputlisting{nosqlfiles/mitglieder.csv}
 
+\newpage
 \section{Group By mit Count}
 Diese Operation soll mittels Map Reduce umgesetzt werden:
 \lstinputlisting{nosqlfiles/groupcount.sql}
@@ -62,6 +63,7 @@ M006	1
 Dieses Resultat deckt sich nicht nur mit dem erwarteten Resultat der SQL-Abfrage, sondern auch mit dem Statusoutput am Ende der Hadoop-Ausführung. Insgesamt sind 9 Datensätze in \emph{registrierungen.csv} enthalten (\emph{Map input records}, \emph{Map Output records} und \emph{Reduce input records}) und das Resultat der Abfrage enthält noch 6 Einträge, da es 6 verschiedene Werte in der Spalte \emph{mnr} gibt (\emph{Reduce input groups} und \emph{Reduce output records}).
 
 
+\newpage
 \section{Join}
 In dieser Aufgabe soll die folgende Operation mittels Map Reduce umgesetzt werden:
 \lstinputlisting{nosqlfiles/join.sql}
@@ -69,14 +71,20 @@ In dieser Aufgabe soll die folgende Operation mittels Map Reduce umgesetzt werde
 Um den Join umzusetzen sehen wir die folgende Aufgabenteilung zwischen Mapper und Reducer vor:
 \begin{description}
 	\item[mapper]	Extrahiert den Join-Key (\emph{mnr}) aus den Zeilen und geben diesen als Key weiter. Als Value wird der restliche Inhalt der Zeile zusammen mit einem Hinweis weitergegeben. Der Hinweis sagt aus, aus welcher Tabelle der Datensatz stammt.
-	\item[reducer]	Setzt die Zeilen des Resultats des Joins zusammen. Dabei muss für jeden Wert des Join-Keys jede Zeile aus \emph{mitglieder} mit jeder Zeile aus \emph{registrierungen} kombiniert werden. Dass \emph{mnr} ein Primary-Key von \emph{mitglieder} ist, und daher aus \emph{mitglieder} nur eine einzige Zeile pro \emph{mnr} geliefert wird, ignorieren wir.
+	\item[reducer]	Setzt die Zeilen des Resultats des Joins zusammen. Dabei muss für jeden Wert des Join-Keys jede Zeile aus \emph{mitglieder} mit jeder Zeile aus \emph{registrierungen} kombiniert werden. Dass \emph{mnr} ein Primary-Key von \emph{mitglieder} ist, und daher aus \emph{mitglieder} nur eine einzige Zeile pro \emph{mnr} geliefert wird, ignorieren wir, da die Information, dass \emph{mnr} in \emph{mitglieder} eindeutig ist, aus den CSV Files nicht direkt hervorgeht.
 \end{description}
 
-Die Lösung der Aufgabe in Java folgt. Für die beiden Input-Tabellen wurden separate Mapper-Klassen erstellt. Diese wurden mittels \emph{MultipleInputs} dem Job hinzugefügt. .......
+Für die beiden Input-Tabellen wurden separate Mapper-Klassen erstellt. Diese wurden mittels \emph{MultipleInputs} dem Job hinzugefügt. Wir führen für die Angabe der Quellfiles der beiden Tabellen einen weiteren Parameter ein. Der erste Parameter gibt hier den Pfad zur Mitglieder-Datei, der zweite Parameter die Registrierungen-Datei und das dritte Argument das Ausgabeverzeichnis an.
+
+Um dem reducer mitteilen zu können, aus welcher Tabelle eine Zeile stammt, haben wir eine zusätzliche Klasse (\emph{MapPair}) definiert. Sie beinhaltet zwei Strings, der String \emph{table} gibt dabei an, aus welcher Tabelle die Daten im String \emph{record} stammen. Damit Instanzen eigener Klassen verwendet werden können, müssen diese von Hadoop serialisiert werden können. Dafür ist die Implementierung des Interfaces \emph{Writable} notwendig. Die darin enthaltenen Methoden schreiben resp. lesen Daten in einen \emph{DataOutput} resp. aus einem \emph{DataInput}.
 
 \lstinputlisting{nosqlfiles/Join.java}
 
-Output:
+Nach dem Exportieren der Klasse in ein JAR File und dem Bereitstellen der Eingabedaten können wir Hadoop mit diesem Job aufrufen:
+
+\lstinputlisting{nosqlfiles/hadoopjoinaufruf.txt}
+
+Die Ausgabe des Map Reduce Jobs entspricht unseren Erwartungen:
 \begin{lstlisting}
 [iso@iso-t530arch hadoop-0.22.0]$ cat OutJoin/part-r-00000 
 M001	A. Huber	Basel		15.05.1978	F2	A04	12.10.2007
