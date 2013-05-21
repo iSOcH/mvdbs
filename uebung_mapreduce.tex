@@ -70,12 +70,14 @@ In dieser Aufgabe soll die folgende Operation mittels Map Reduce umgesetzt werde
 
 Um den Join umzusetzen sehen wir die folgende Aufgabenteilung zwischen Mapper und Reducer vor:
 \begin{description}
-	\item[mapper]	Extrahiert den Join-Key (\emph{mnr}) aus den Zeilen und geben diesen als Key weiter. Als Value wird der restliche Inhalt der Zeile zusammen mit einem Hinweis weitergegeben. Der Hinweis sagt aus, aus welcher Tabelle der Datensatz stammt.
+	\item[mapper]	Extrahiert den Join-Key (\emph{mnr}) aus den Zeilen und gibt diesen als Key weiter. Als Value wird der restliche Inhalt der Zeile zusammen mit einem Hinweis weitergegeben. Der Hinweis sagt aus, aus welcher Tabelle der Datensatz stammt.
 	\item[reducer]	Setzt die Zeilen des Resultats des Joins zusammen. Dabei muss für jeden Wert des Join-Keys jede Zeile aus \emph{mitglieder} mit jeder Zeile aus \emph{registrierungen} kombiniert werden. Dass \emph{mnr} ein Primary-Key von \emph{mitglieder} ist, und daher aus \emph{mitglieder} nur eine einzige Zeile pro \emph{mnr} geliefert wird, ignorieren wir, da die Information, dass \emph{mnr} in \emph{mitglieder} eindeutig ist, aus den CSV Files nicht direkt hervorgeht.
 \end{description}
 
 Für die beiden Input-Tabellen wurden separate Mapper-Klassen erstellt. Diese wurden mittels \emph{MultipleInputs} dem Job hinzugefügt. Wir führen für die Angabe der Quellfiles der beiden Tabellen einen weiteren Parameter ein. Der erste Parameter gibt hier den Pfad zur Mitglieder-Datei, der zweite Parameter die Registrierungen-Datei und das dritte Argument das Ausgabeverzeichnis an.
-
+\begin{lstlisting}
+join.jar <in mitglieder> <in registrierungen> <out>
+\end{lstlisting}
 Um dem reducer mitteilen zu können, aus welcher Tabelle eine Zeile stammt, haben wir eine zusätzliche Klasse (\emph{MapPair}) definiert. Sie beinhaltet zwei Strings, der String \emph{table} gibt dabei an, aus welcher Tabelle die Daten im String \emph{record} stammen. Damit Instanzen eigener Klassen verwendet werden können, müssen diese von Hadoop serialisiert werden können. Dafür ist die Implementierung des Interfaces \emph{Writable} notwendig. Die darin enthaltenen Methoden schreiben resp. lesen Daten in einen \emph{DataOutput} resp. aus einem \emph{DataInput}.
 
 \lstinputlisting{nosqlfiles/Join.java}
