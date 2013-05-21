@@ -29,7 +29,7 @@ public class Join {
 			System.err.println("Usage: join.jar <in mitglieder> <in registrierungen> <out>");
 			System.exit(2);
 		}
-		Job job = new Job(conf, "join");
+		Job job = Job.getInstance(conf, "join");
 		MultipleInputs.addInputPath(job, new Path(otherArgs[0]), TextInputFormat.class, MitgliederMapper.class);
 		MultipleInputs.addInputPath(job, new Path(otherArgs[1]), TextInputFormat.class, RegistrierungenMapper.class);
 		job.setReducerClass(MRJoinReducer.class);
