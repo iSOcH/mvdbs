@@ -30,20 +30,32 @@ public class Join {
 			System.exit(2);
 		}
 		Job job = Job.getInstance(conf, "join");
+		
+		// erstes Argument ist Pfad zu Mitgliedern, darauf soll MitgliederMapper angewendet werden
 		MultipleInputs.addInputPath(job, new Path(otherArgs[0]), TextInputFormat.class, MitgliederMapper.class);
+		
+		// zweites Argument ist Pfad zu Registrierungen, darauf soll RegistrierungenMapper angewendet werden
 		MultipleInputs.addInputPath(job, new Path(otherArgs[1]), TextInputFormat.class, RegistrierungenMapper.class);
+		
+		// Datentypen festlegen
 		job.setReducerClass(MRJoinReducer.class);
 		job.setMapOutputValueClass(MapPair.class);
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 		FileOutputFormat.setOutputPath(job, new Path(otherArgs[2]));
+		
+		// Job starten und Fertigstellung abwarten
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
 	
 	public static class MitgliederMapper extends Mapper<LongWritable, Text, Text, MapPair> {
+		/**
+		 * trennt Eintraege aus Mitglieder-CSV in Key (mnr) und Daten auf, Daten
+		 * werden um Information ergaenzt, dass sie aus der Mitglieder-Tabelle stammen
+		 */
 		@Override
 		protected void map(LongWritable key, Text value,
-				org.apache.hadoop.mapreduce.Mapper<LongWritable, Text, Text, MapPair>.Context context)
+				Mapper<LongWritable, Text, Text, MapPair>.Context context)
 				throws IOException, InterruptedException {
 			String[] fields = value.toString().split(";");
 			
@@ -55,9 +67,13 @@ public class Join {
 	}
 	
 	public static class RegistrierungenMapper extends Mapper<LongWritable, Text, Text, MapPair> {
+		/**
+		 * trennt Eintraege aus Registrierungen-CSV in Key (mnr) und Daten auf, Daten
+		 * werden um Information ergaenzt, dass sie aus der Registrierungen-Tabelle stammen
+		 */
 		@Override
 		protected void map(LongWritable key, Text value,
-				org.apache.hadoop.mapreduce.Mapper<LongWritable, Text, Text, MapPair>.Context context)
+				Mapper<LongWritable, Text, Text, MapPair>.Context context)
 				throws IOException, InterruptedException {
 			String[] fields = value.toString().split(";");
 			
@@ -69,12 +85,17 @@ public class Join {
 	}
 	
 	public static class MRJoinReducer extends Reducer<Text, MapPair, Text, Text> {
+		/**
+		 * joint Datensaetze aus MitgliederMapper und RegistrierungenMapper
+		 * Output: Tab-getrennte Werte;
+		 * mnr, felder-aus-mitglieder, felder-aus-registrierungen
+		 */
 		@Override
 		protected void reduce(Text key, Iterable<MapPair> vals,
-				org.apache.hadoop.mapreduce.Reducer<Text, MapPair, Text, Text>.Context ctx)
+				Reducer<Text, MapPair, Text, Text>.Context ctx)
 				throws IOException, InterruptedException {
 			
-			// trennung von Zeilen aus Mitglieder und Registrierungen
+			// Trennung von Zeilen aus Mitglieder und Registrierungen
 			List<String> recordsM = new ArrayList<>();
 			List<String> recordsR = new ArrayList<>();
 			
@@ -97,7 +118,7 @@ public class Join {
 	}
 
 	/**
-	 * Hilfsklasse um sowohol eine Table-ID als auch einen Record
+	 * Hilfsklasse um sowohl eine Table-ID als auch einen Record
 	 * von map an reduce weiterreichen zu koennen
 	 */
 	public static class MapPair implements Writable {
@@ -110,12 +131,12 @@ public class Join {
 		public MapPair() {}
 		
 		@Override
-		public void readFields(DataInput arg0) throws IOException {
-			table = arg0.readUTF(); record = arg0.readUTF();
+		public void readFields(DataInput in) throws IOException {
+			table = in.readUTF(); record = in.readUTF();
 		}
 		@Override
-		public void write(DataOutput arg0) throws IOException {
-			arg0.writeUTF(table); arg0.writeUTF(record);
+		public void write(DataOutput out) throws IOException {
+			out.writeUTF(table); out.writeUTF(record);
 		}
 		public static MapPair read(DataInput in) throws IOException {
 			final MapPair mp = new MapPair();

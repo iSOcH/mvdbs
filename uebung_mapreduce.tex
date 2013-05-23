@@ -33,6 +33,7 @@ Inhalt von \emph{Mitglieder}:
 
 \newpage
 \section{Group By mit Count}
+\subsection{Lösungsskizze}
 Diese Operation soll mittels Map Reduce umgesetzt werden:
 \lstinputlisting{nosqlfiles/groupcount.sql}
 
@@ -43,12 +44,15 @@ Die Lösung dieser Aufgabe haben wir sehr ähnlich umgesetzt wie die Aufgabe, be
 	\item[reducer] Die Anzahl Values pro Key (pro Wert in \emph{mnr} wird einmal ein reducer mit diesem Wert als Key aufgerufen) zählen und diese Anzahl zusammen mit dem Key ausgeben.
 \end{description}
 
+\subsection{Implementation}
 Die Aufgabe haben wir dann mit dem folgenden Code gelöst:
 \lstinputlisting{nosqlfiles/GroupCount.java}
 
+\subsection{Aufruf Hadoop}
 Nach dem Platzieren der Datei \emph{registrierungen.csv} in den Ordner \emph{InGCount} und dem Exportieren des Codes in eine JAR-Datei können wir mit dem folgenden Aufruf die Abfrage ausführen:
 \lstinputlisting{nosqlfiles/hadoopgcountaufruf.txt}
 
+\subsection{Ausgabe}
 Die Anzeige des Output-Files zeigt das Resultat der Abfrage:
 \begin{lstlisting}
 [iso@iso-t530arch hadoop-0.22.0]$ cat OutGCount/part-r-00000 
@@ -65,6 +69,7 @@ Dieses Resultat deckt sich nicht nur mit dem erwarteten Resultat der SQL-Abfrage
 
 \newpage
 \section{Join}
+\subsection{Lösungsskizze}
 In dieser Aufgabe soll die folgende Operation mittels Map Reduce umgesetzt werden:
 \lstinputlisting{nosqlfiles/join.sql}
 
@@ -78,14 +83,19 @@ Für die beiden Input-Tabellen wurden separate Mapper-Klassen erstellt. Diese wu
 \begin{lstlisting}
 join.jar <in mitglieder> <in registrierungen> <out>
 \end{lstlisting}
+
+\subsection{Implementation}
 Um dem reducer mitteilen zu können, aus welcher Tabelle eine Zeile stammt, haben wir eine zusätzliche Klasse (\emph{MapPair}) definiert. Sie beinhaltet zwei Strings, der String \emph{table} gibt dabei an, aus welcher Tabelle die Daten im String \emph{record} stammen. Damit Instanzen eigener Klassen verwendet werden können, müssen diese von Hadoop serialisiert werden können. Dafür ist die Implementierung des Interfaces \emph{Writable} notwendig. Die darin enthaltenen Methoden schreiben resp. lesen Daten in einen \emph{DataOutput} resp. aus einem \emph{DataInput}.
 
 \lstinputlisting{nosqlfiles/Join.java}
 
+\subsection{Aufruf Hadoop}
 Nach dem Exportieren der Klasse in ein JAR File und dem Bereitstellen der Eingabedaten können wir Hadoop mit diesem Job aufrufen:
 
 \lstinputlisting{nosqlfiles/hadoopjoinaufruf.txt}
+Wir sehen, dass für jeden Wert in \emph{mnr} eine \emph{Reduce Input Group} gebildet wird. Da die Mapper keine Datensätze filtern, ist die Anzahl der \emph{Map Input Records} mit jener der \emph{Map Output Records} identisch.
 
+\subsection{Ausgabe}
 Die Ausgabe des Map Reduce Jobs entspricht unseren Erwartungen:
 \begin{lstlisting}
 [iso@iso-t530arch hadoop-0.22.0]$ cat OutJoin/part-r-00000 
